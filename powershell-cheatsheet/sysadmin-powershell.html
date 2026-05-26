@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SysAdmin Lab - PowerShell Cheatsheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg0:#060810;--bg1:#0a0d18;--bg2:#0e1220;--bg3:#141a2c;--bg4:#1a2238;
+  --acc:#7c3aed;--acc2:#a78bfa;--acc-g:rgba(124,58,237,.15);--acc-gb:rgba(124,58,237,.06);
+  --blu:#2563eb;--blu2:#60a5fa;--blu-g:rgba(37,99,235,.14);--blu-gb:rgba(37,99,235,.06);
+  --grn:#059669;--grn2:#34d399;--grn-g:rgba(5,150,105,.13);--grn-gb:rgba(5,150,105,.06);
+  --amb:#d97706;--amb2:#fbbf24;--amb-g:rgba(217,119,6,.13);--amb-gb:rgba(217,119,6,.06);
+  --cyn:#0891b2;--cyn2:#22d3ee;--cyn-g:rgba(8,145,178,.13);--cyn-gb:rgba(8,145,178,.06);
+  --ok:#16a34a;--ok-bg:rgba(22,163,74,.10);
+  --warn:#d97706;--warn-bg:rgba(217,119,6,.10);
+  --crit:#dc2626;--crit-bg:rgba(220,38,38,.10);
+  --info:#0891b2;--info-bg:rgba(8,145,178,.10);
+  --txt0:#dce8f5;--txt1:#8faec8;--txt2:#4a6a85;
+  --brd:#1a2535;--brd2:#243545;
+  --mono:"JetBrains Mono",monospace;--sans:"Inter",sans-serif;
+  --sidebar:235px;
+}
+html,body{min-height:100%;background:var(--bg0);color:var(--txt0);font-family:var(--sans);font-size:15px;line-height:1.6;overflow-x:hidden}
+#grain{position:fixed;inset:0;z-index:999;pointer-events:none;opacity:.03;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat:repeat;background-size:128px}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:repeating-linear-gradient(0deg,transparent,transparent 39px,var(--brd) 40px),
+  repeating-linear-gradient(90deg,transparent,transparent 39px,var(--brd) 40px);opacity:.022}
+.layout{display:flex;min-height:100vh;position:relative;z-index:1}
+.sidebar{width:var(--sidebar);flex-shrink:0;background:rgba(6,8,16,.97);border-right:1px solid var(--brd);position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;z-index:100;overflow:hidden}
+.sb-brand{padding:20px 16px 16px;border-bottom:1px solid var(--brd);flex-shrink:0}
+.sb-logo{font-size:13px;font-weight:800;color:var(--txt0)}
+.sb-logo .a{color:var(--acc2)}.sb-logo .b{color:var(--blu2)}
+.sb-sub{font-size:9px;font-family:var(--mono);color:var(--txt2);margin-top:2px;letter-spacing:.06em;text-transform:uppercase}
+.sb-section{padding:12px 14px 5px;font-size:9px;font-family:var(--mono);color:var(--txt2);letter-spacing:.1em;text-transform:uppercase;flex-shrink:0}
+.sb-nav{flex:1;overflow-y:auto;padding:0 8px 8px}
+.sb-btn{width:100%;display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid transparent;background:none;cursor:pointer;border-radius:8px;color:var(--txt1);font-family:var(--sans);font-size:12px;font-weight:500;transition:all .15s;text-align:left;margin-bottom:2px}
+.sb-btn:hover{background:var(--bg3);color:var(--txt0)}
+.sb-btn.active{background:var(--acc-g);color:var(--acc2);border-color:rgba(124,58,237,.3)}
+.sb-btn.active .sb-ico{background:var(--acc-g);border-color:rgba(124,58,237,.4)}
+.sb-ico{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:var(--bg3);border:1px solid var(--brd)}
+.sb-badge{font-size:9px;font-family:var(--mono);background:var(--bg4);padding:2px 6px;border-radius:4px;color:var(--txt2);margin-left:auto}
+.sb-footer{padding:12px 14px;border-top:1px solid var(--brd);flex-shrink:0}
+.sb-prog-lbl{display:flex;justify-content:space-between;margin-bottom:5px}
+.sb-prog-lbl span,.sb-prog-lbl strong{font-size:10px;font-family:var(--mono);color:var(--txt2)}
+.sb-prog-lbl strong{color:var(--acc2)}
+.sb-track{height:4px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.sb-fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--blu2));border-radius:2px;transition:width .4s;width:0%}
+.sb-ver{font-size:9px;font-family:var(--mono);color:var(--txt2);margin-top:6px}
+.main{margin-left:var(--sidebar);flex:1;min-height:100vh;display:flex;flex-direction:column}
+.hero{position:relative;height:240px;overflow:hidden;flex-shrink:0}
+.hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;animation:slowZoom 14s ease-out forwards}
+.hero-ov{position:absolute;inset:0;background:linear-gradient(105deg,rgba(6,8,16,.97) 28%,rgba(124,58,237,.15) 100%)}
+.hero-content{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:28px 32px}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(124,58,237,.2);border:1px solid rgba(124,58,237,.45);border-radius:20px;padding:3px 12px;font-size:10px;font-weight:600;color:var(--acc2);letter-spacing:.08em;text-transform:uppercase;font-family:var(--mono);margin-bottom:10px;width:fit-content}
+.hero-dot{width:6px;height:6px;border-radius:50%;background:var(--acc2);animation:blink 2s infinite;display:inline-block}
+.hero-h1{font-size:30px;font-weight:800;line-height:1.1;letter-spacing:-.02em;margin-bottom:8px}
+.hero-h1 .a{color:var(--acc2)}.hero-h1 .b{color:var(--blu2)}
+.hero-sub{font-size:11px;color:var(--txt1);font-family:var(--mono);display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.hero-sep{color:var(--txt2)}
+.hero-meta{display:flex;gap:6px;flex-wrap:wrap}
+.mpill{background:rgba(6,8,16,.7);border:1px solid var(--brd2);border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--mono);color:var(--txt1)}
+.mpill.a{border-color:rgba(124,58,237,.4);color:var(--acc2);background:var(--acc-gb)}
+.mpill.b{border-color:rgba(37,99,235,.4);color:var(--blu2);background:var(--blu-gb)}
+.mpill.g{border-color:rgba(5,150,105,.4);color:var(--grn2);background:var(--grn-gb)}
+.panels{flex:1;padding:0 32px 60px}
+.panel{display:none;animation:fadeUp .25s ease;padding-top:4px}
+.panel.active{display:block}
+.st{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-family:var(--mono);padding:20px 0 10px;display:flex;align-items:center;gap:10px}
+.st::after{content:"";flex:1;height:1px}
+.st.ac{color:var(--acc2)}.st.ac::after{background:linear-gradient(90deg,rgba(124,58,237,.4),transparent)}
+.st.bl{color:var(--blu2)}.st.bl::after{background:linear-gradient(90deg,rgba(37,99,235,.4),transparent)}
+.st.gr{color:var(--grn2)}.st.gr::after{background:linear-gradient(90deg,rgba(5,150,105,.4),transparent)}
+.st.am{color:var(--amb2)}.st.am::after{background:linear-gradient(90deg,rgba(217,119,6,.4),transparent)}
+.st.cy{color:var(--cyn2)}.st.cy::after{background:linear-gradient(90deg,rgba(8,145,178,.4),transparent)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
+.card{background:var(--bg2);border:1px solid var(--brd);border-radius:10px;margin-bottom:10px;overflow:hidden;transition:border-color .2s,box-shadow .2s}
+.card:hover{border-color:rgba(124,58,237,.35);box-shadow:0 0 18px rgba(124,58,237,.07)}
+.ah{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;cursor:pointer;user-select:none;gap:10px}
+.ah-l{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+.aico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;background:var(--acc-gb);border:1px solid rgba(124,58,237,.2)}
+.aico.bl{background:var(--blu-gb);border-color:rgba(37,99,235,.2)}
+.aico.gr{background:var(--grn-gb);border-color:rgba(5,150,105,.2)}
+.aico.am{background:var(--amb-gb);border-color:rgba(217,119,6,.2)}
+.aico.cy{background:var(--cyn-gb);border-color:rgba(8,145,178,.2)}
+.atit{font-size:13px;font-weight:600;color:var(--txt0)}
+.asub{font-size:10px;color:var(--txt2);font-family:var(--mono);margin-top:1px}
+.aarr{font-size:10px;color:var(--txt2);flex-shrink:0;transition:transform .25s}
+.ah.open .aarr{transform:rotate(180deg)}
+.ab{display:none;padding:0 16px 16px;border-top:1px solid var(--brd)}
+.ab.open{display:block}
+.cmd{background:var(--bg0);border:1px solid var(--brd2);border-radius:8px;margin:8px 0;overflow:hidden}
+.cb{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;background:var(--bg3);border-bottom:1px solid var(--brd)}
+.cl{font-size:9px;font-family:var(--mono);color:var(--txt2);text-transform:uppercase;letter-spacing:.07em}
+.cc{background:none;border:1px solid var(--brd2);border-radius:4px;padding:3px 10px;font-size:10px;font-family:var(--mono);color:var(--txt1);cursor:pointer;transition:all .15s}
+.cc:hover{background:var(--acc-g);border-color:var(--acc);color:var(--acc2)}
+.cc.ok{background:rgba(22,163,74,.15);border-color:var(--ok);color:var(--ok)}
+.cd{padding:12px 14px;font-family:var(--mono);font-size:12px;line-height:1.75;color:var(--txt0);overflow-x:auto;white-space:pre}
+.cd .cm{color:var(--txt2)}.cd .kw{color:var(--acc2)}.cd .fl{color:var(--blu2)}
+.cd .st2{color:var(--grn2)}.cd .va{color:#f0abfc}.cd .op{color:var(--amb2)}
+.cd .nu{color:var(--cyn2)}.cd .ty{color:#fcd34d}
+.ir{display:flex;align-items:flex-start;gap:12px;padding:8px 0;border-bottom:1px solid var(--brd);font-size:12px}
+.ir:last-child{border-bottom:none}
+.ir:hover{background:rgba(124,58,237,.04);margin:0 -8px;padding:8px 8px;border-radius:4px}
+.ik{color:var(--txt2);font-family:var(--mono);font-size:11px;min-width:150px;flex-shrink:0;padding-top:1px}
+.iv{color:var(--txt0);flex:1}
+.iv code{font-family:var(--mono);font-size:11px;background:var(--bg3);padding:1px 5px;border-radius:3px;color:var(--acc2)}
+.al{border-radius:8px;padding:10px 13px;margin:8px 0;display:flex;gap:10px;align-items:flex-start;font-size:12px;border-left:3px solid}
+.ai{font-size:16px;flex-shrink:0;margin-top:1px}
+.at{font-weight:700;font-size:10px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px;font-family:var(--mono)}
+.al.tip{background:var(--info-bg);border-color:var(--cyn);color:#7dd3fc}.al.tip .at{color:var(--cyn2)}
+.al.warn{background:var(--warn-bg);border-color:var(--warn);color:#fcd34d}.al.warn .at{color:var(--amb2)}
+.al.crit{background:var(--crit-bg);border-color:var(--crit);color:#fca5a5}.al.crit .at{color:#f87171}
+.al.ok{background:var(--ok-bg);border-color:var(--ok);color:#86efac}.al.ok .at{color:var(--grn2)}
+.al.ps{background:var(--acc-g);border-color:var(--acc);color:#ddd6fe}.al.ps .at{color:var(--acc2)}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0}
+.tag{font-size:9px;font-family:var(--mono);font-weight:600;padding:2px 8px;border-radius:4px;letter-spacing:.06em;text-transform:uppercase}
+.tp{background:var(--acc-g);color:var(--acc2);border:1px solid rgba(124,58,237,.3)}
+.tb{background:var(--blu-g);color:var(--blu2);border:1px solid rgba(37,99,235,.3)}
+.tg{background:var(--grn-g);color:var(--grn2);border:1px solid rgba(5,150,105,.3)}
+.ta{background:var(--amb-g);color:var(--amb2);border:1px solid rgba(217,119,6,.3)}
+.tc{background:var(--cyn-g);color:var(--cyn2);border:1px solid rgba(8,145,178,.3)}
+.trow{display:flex;gap:8px;margin-bottom:8px}
+.tbox{flex:1;background:var(--bg3);border:1px solid var(--brd);border-radius:8px;padding:10px 12px;font-size:11px;font-family:var(--mono)}
+.tbl{color:var(--txt2);margin-bottom:3px;font-size:9px;text-transform:uppercase;letter-spacing:.06em}
+.tval{color:var(--txt0);font-weight:500}
+.tbox.hp{border-color:var(--acc);background:var(--acc-gb)}.tbox.hp .tval{color:var(--acc2)}
+.tbox.hb{border-color:var(--blu);background:var(--blu-gb)}.tbox.hb .tval{color:var(--blu2)}
+.tbox.hg{border-color:var(--grn);background:var(--grn-gb)}.tbox.hg .tval{color:var(--grn2)}
+.qr{width:100%;border-collapse:collapse;font-size:11px;margin:8px 0}
+.qr th{background:var(--bg3);padding:7px 10px;text-align:left;font-size:9px;font-family:var(--mono);color:var(--txt2);font-weight:700;letter-spacing:.07em;text-transform:uppercase;border-bottom:1px solid var(--brd)}
+.qr td{padding:7px 10px;border-bottom:1px solid var(--brd);color:var(--txt1);vertical-align:top}
+.qr tr:hover td{background:rgba(124,58,237,.04)}
+.qr .mp{color:var(--acc2);font-family:var(--mono);font-size:11px}
+.chi{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:8px;cursor:pointer;font-size:12px;color:var(--txt1);border:1px solid transparent;margin-bottom:4px;user-select:none;transition:background .15s}
+.chi:hover{background:var(--bg3);border-color:var(--brd)}
+.chi.done{color:var(--txt2);text-decoration:line-through}
+.chi.done .chb{background:var(--ok);border-color:var(--ok)}
+.chi.done .chb::after{opacity:1;transform:scale(1)}
+.chb{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--brd2);flex-shrink:0;position:relative;transition:all .2s;background:var(--bg0)}
+.chb::after{content:"v";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;opacity:0;transform:scale(.6);transition:all .2s}
+.chcat{font-size:9px;font-family:var(--mono);color:var(--txt2);margin-right:6px;text-transform:uppercase}
+.pwrap{background:var(--bg2);border:1px solid var(--brd);border-radius:10px;padding:16px;margin-bottom:14px}
+.pwt{font-size:11px;font-weight:700;color:var(--txt1);margin-bottom:10px;font-family:var(--mono);display:flex;justify-content:space-between}
+.ptrack{height:8px;background:var(--bg4);border-radius:4px;overflow:hidden;margin-bottom:5px}
+.pfill{height:100%;background:linear-gradient(90deg,var(--acc),var(--blu2));border-radius:4px;transition:width .35s;width:0%}
+.pcount{font-size:10px;font-family:var(--mono);color:var(--txt2);text-align:right}
+.div{height:1px;background:linear-gradient(90deg,transparent,var(--brd),transparent);margin:12px 0}
+.bnav{display:none;position:fixed;bottom:0;left:0;right:0;height:60px;background:rgba(6,8,16,.97);border-top:1px solid var(--brd);z-index:200}
+.bnav-in{display:flex;height:100%;padding:0 2px}
+.bb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:none;border:none;cursor:pointer;color:var(--txt2);transition:color .2s;border-radius:8px;margin:4px 2px;font-family:var(--sans);min-height:44px}
+.bb:hover{color:var(--txt1);background:var(--bg3)}
+.bb.active{color:var(--acc2);background:rgba(124,58,237,.12)}
+.bi{font-size:16px;line-height:1}
+.bl{font-size:8px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;font-family:var(--mono)}
+footer{padding:18px 32px;border-top:1px solid var(--brd)}
+.fi{display:flex;align-items:center;justify-content:space-between}
+.fb{font-size:11px;font-family:var(--mono);color:var(--txt2)}
+.fb .a{color:var(--acc2)}.fb .b{color:var(--blu2)}
+.fv{font-size:9px;font-family:var(--mono);color:var(--txt2);background:var(--bg3);padding:2px 8px;border-radius:4px;border:1px solid var(--brd)}
+@keyframes slowZoom{0%{transform:scale(1)}100%{transform:scale(1.06)}}
+@keyframes fadeUp{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+@media(max-width:900px){
+  .sidebar{display:none}.main{margin-left:0}
+  .hero{height:210px}.hero-content{padding:18px}.hero-h1{font-size:22px}
+  .panels{padding:0 14px 80px}.g2{grid-template-columns:1fr}.g3{grid-template-columns:1fr 1fr}
+  .bnav{display:block}
+  footer{padding:16px 14px;margin-bottom:60px}
+}
+@media(max-width:480px){.g3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="grain"></div>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo"><span class="a">Power</span><span class="b">Shell</span> Lab</div>
+    <div class="sb-sub">SysAdmin Cheatsheet v1.0</div>
+  </div>
+  <div class="sb-section">Secciones</div>
+  <nav class="sb-nav">
+    <button class="sb-btn active" onclick="sw('base',this)"><div class="sb-ico">&#9889;</div><span>Base y Sintaxis</span></button>
+    <button class="sb-btn" onclick="sw('sistema',this)"><div class="sb-ico">&#128187;</div><span>Sistema y Procesos</span></button>
+    <button class="sb-btn" onclick="sw('red',this)"><div class="sb-ico">&#127760;</div><span>Red y Conectividad</span></button>
+    <button class="sb-btn" onclick="sw('ad',this)"><div class="sb-ico">&#127968;</div><span>Active Directory</span></button>
+    <button class="sb-btn" onclick="sw('archivos',this)"><div class="sb-ico">&#128193;</div><span>Archivos y Discos</span></button>
+    <button class="sb-btn" onclick="sw('scripts',this)"><div class="sb-ico">&#128196;</div><span>Scripts produccion</span></button>
+    <button class="sb-btn" onclick="sw('check',this)"><div class="sb-ico">&#9989;</div><span>Checklist</span><span class="sb-badge" id="sb-badge">0/20</span></button>
+  </nav>
+  <div class="sb-footer">
+    <div class="sb-prog-lbl"><span>Progreso</span><strong id="sb-pct">0%</strong></div>
+    <div class="sb-track"><div class="sb-fill" id="sb-fill"></div></div>
+    <div class="sb-ver">PS 5.1 / 7.x - Windows Server</div>
+  </div>
+</aside>
+<main class="main">
+<div class="hero">
+  <img class="hero-img" src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1200&q=80" alt="PowerShell">
+  <div class="hero-ov"></div>
+  <div class="hero-content">
+    <div class="hero-badge"><span class="hero-dot"></span>CHEATSHEET SYSADMIN - PS v1.0</div>
+    <h1 class="hero-h1"><span class="a">Power</span><span class="b">Shell</span></h1>
+    <div class="hero-sub">One-liners <span class="hero-sep">//</span> AD <span class="hero-sep">//</span> Red <span class="hero-sep">//</span> Archivos <span class="hero-sep">//</span> Scripts de produccion</div>
+    <div class="hero-meta">
+      <span class="mpill a">&#128187; PS 5.1 + PS 7.x</span>
+      <span class="mpill b">&#129695; Windows Server 2019/22</span>
+      <span class="mpill g">&#8987; Referencia completa</span>
+    </div>
+  </div>
+</div>
+<div class="panels">
+
+<div class="panel active" id="p-base">
+  <div class="st ac">&#9889; Base y Sintaxis PowerShell</div>
+  <div class="al ps"><div class="ai">&#128187;</div><div><div class="at">PowerShell</div>Shell orientada a objetos. Los cmdlets devuelven objetos, no texto. Encadena con | y filtra con Select-Object, Where-Object y ForEach-Object</div></div>
+  <div class="card">
+    <div class="ah" onclick="togAcc(this)">
+      <div class="ah-l"><div class="aico">&#128161;</div><div><div class="atit">Conceptos fundamentales</div><div class="asub">Lo que necesitas saber antes de empezar</div></div></div><span class="aarr">&#9660;</span>
+    </div>
+    <div class="ab">
+      <div class="ir"><span class="ik">Verb-Noun</span><span class="iv">Todos los cmdlets siguen este patron: Get-Process, Set-Item, New-ADUser</span></div>
+      <div class="ir"><span class="ik">Pipeline |</span><span class="iv">Pasa el objeto de salida al siguiente cmdlet como entrada</span></div>
+      <div class="ir"><span class="ik">$variable</span><span class="iv">Variables empiezan con $. Tipado dinamico: $x = 5 o $x = "texto"</span></div>
+      <div class="ir"><span class="ik">Get-Help</span><span class="iv">Documentacion integrada. Get-Help Get-Process -Examples muestra ejemplos reales</span></div>
+      <div class="ir"><span class="ik">Get-Member</span><span class="iv">Ver propiedades y metodos de cualquier objeto: Get-Process | Get-Member</span></div>
+      <div class="ir"><span class="ik">Alias utiles</span><span class="iv">ls=Get-ChildItem, ps=Get-Process, cat=Get-Content, cd=Set-Location, echo=Write-Output</span></div>
+      <div class="ir"><span class="ik">PS 5.1 vs 7.x</span><span class="iv">PS 7.x es multiplataforma y mas rapido. Windows Server 2022 trae PS 5.1 por defecto</span></div>
+      <div class="div"></div>
+      <div class="cmd"><div class="cb"><span class="cl">&#128187; PowerShell - primeros pasos</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+        <div class="cd"><span class="cm"># Ver version instalada</span>
+<span class="va">$PSVersionTable</span>
+<span class="cm"># Ayuda de cmdlet con ejemplos</span>
+<span class="kw">Get-Help</span> <span class="kw">Get-Process</span> <span class="fl">-Examples</span>
+<span class="cm"># Ver propiedades de un objeto</span>
+<span class="kw">Get-Process</span> | <span class="kw">Get-Member</span>
+<span class="cm"># Ejecutar como Admin desde PS normal</span>
+<span class="kw">Start-Process</span> powershell <span class="fl">-Verb</span> RunAs
+<span class="cm"># Cambiar politica de ejecucion</span>
+<span class="kw">Set-ExecutionPolicy</span> RemoteSigned <span class="fl">-Scope</span> CurrentUser</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ah" onclick="togAcc(this)">
+      <div class="ah-l"><div class="aico">&#128260;</div><div><div class="atit">Pipeline y filtrado esencial</div><div class="asub">Select, Where, ForEach, Sort</div></div></div><span class="aarr">&#9660;</span>
+    </div>
+    <div class="ab">
+      <div class="cmd"><div class="cb"><span class="cl">&#128187; PowerShell</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+        <div class="cd"><span class="cm"># Seleccionar propiedades</span>
+<span class="kw">Get-Process</span> | <span class="kw">Select-Object</span> Name, Id, CPU, WorkingSet
+
+<span class="cm"># Filtrar (equivale a WHERE en SQL)</span>
+<span class="kw">Get-Process</span> | <span class="kw">Where-Object</span> { <span class="va">$_</span>.CPU <span class="fl">-gt</span> <span class="nu">100</span> }
+<span class="kw">Get-Service</span> | <span class="kw">Where-Object</span> Status <span class="fl">-eq</span> <span class="st2">"Running"</span>
+
+<span class="cm"># Ordenar y limitar</span>
+<span class="kw">Get-Process</span> | <span class="kw">Sort-Object</span> CPU <span class="fl">-Descending</span> | <span class="kw">Select-Object</span> <span class="fl">-First</span> <span class="nu">10</span>
+
+<span class="cm"># Iterar sobre cada objeto</span>
+<span class="kw">Get-Service</span> | <span class="kw">ForEach-Object</span> { <span class="st2">"$($_.Name): $($_.Status)"</span> }
+
+<span class="cm"># Exportar a CSV</span>
+<span class="kw">Get-Process</span> | <span class="kw">Select-Object</span> Name,CPU | <span class="kw">Export-Csv</span> <span class="st2">"C:\procesos.csv"</span> <span class="fl">-NoTypeInformation</span>
+
+<span class="cm"># Leer CSV</span>
+<span class="kw">Import-Csv</span> <span class="st2">"C:\datos.csv"</span> | <span class="kw">Select-Object</span> *
+
+<span class="cm"># Ver resultado en ventana grafica filtrable</span>
+<span class="kw">Get-Process</span> | <span class="kw">Out-GridView</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ah" onclick="togAcc(this)">
+      <div class="ah-l"><div class="aico">&#128203;</div><div><div class="atit">Variables, condicionales y bucles</div><div class="asub">Estructuras de control</div></div></div><span class="aarr">&#9660;</span>
+    </div>
+    <div class="ab">
+      <div class="cmd"><div class="cb"><span class="cl">&#128187; PowerShell</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+        <div class="cd"><span class="cm"># Variables</span>
+<span class="va">$nombre</span> = <span class="st2">"Juan"</span>
+<span class="va">$numero</span> = <span class="nu">42</span>
+<span class="va">$lista</span>  = <span class="op">@(</span><span class="st2">"a"</span>,<span class="st2">"b"</span>,<span class="st2">"c"</span><span class="op">)</span>
+<span class="va">$tabla</span>  = <span class="op">@{</span>nombre=<span class="st2">"Juan"</span>; edad=<span class="nu">30</span><span class="op">}</span>
+
+<span class="cm"># If/ElseIf/Else</span>
+<span class="op">if</span> (<span class="va">$numero</span> <span class="fl">-gt</span> <span class="nu">10</span>) { <span class="st2">"Mayor"</span> }
+<span class="op">elseif</span> (<span class="va">$numero</span> <span class="fl">-eq</span> <span class="nu">10</span>) { <span class="st2">"Igual"</span> }
+<span class="op">else</span> { <span class="st2">"Menor"</span> }
+
+<span class="cm"># Foreach</span>
+<span class="op">foreach</span> (<span class="va">$item</span> <span class="op">in</span> <span class="va">$lista</span>) { <span class="kw">Write-Output</span> <span class="va">$item</span> }
+
+<span class="cm"># For clasico</span>
+<span class="op">for</span> (<span class="va">$i</span>=<span class="nu">0</span>; <span class="va">$i</span> <span class="fl">-lt</span> <span class="nu">5</span>; <span class="va">$i</span>++) { <span class="kw">Write-Output</span> <span class="va">$i</span> }
+
+<span class="cm"># Operadores de comparacion</span>
+<span class="cm"># -eq -ne -gt -lt -ge -le</span>
+<span class="cm"># -like "texto*"  -match "regex"  -contains</span>
+<span class="cm"># -and  -or  -not</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ah" onclick="togAcc(this)">
+      <div class="ah-l"><div class="aico">&#128196;</div><div><div class="atit">Funciones y manejo de errores</div><div class="asub">Try/Catch y funciones reutilizables</div></div></div><span class="aarr">&#9660;</span>
+    </div>
+    <div class="ab">
+      <div class="cmd"><div class="cb"><span class="cl">&#128187; PowerShell</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+        <div class="cd"><span class="cm"># Funcion con parametros</span>
+<span class="op">function</span> <span class="kw">Test-Puerto</span> {
+    <span class="op">param</span>(
+        <span class="ty">[string]</span><span class="va">$Host</span>    = <span class="st2">"localhost"</span>,
+        <span class="ty">[int]</span>   <span class="va">$Puerto</span> = <span class="nu">80</span>
+    )
+    <span class="va">$r</span> = <span class="kw">Test-NetConnection</span> <span class="va">$Host</span> <span class="fl">-Port</span> <span class="va">$Puerto</span> <span class="fl">-WarningAction</span> SilentlyContinue
+    <span class="kw">Write-Output</span> <span class="st2">"$Host :$Puerto -> $($r.TcpTestSucceeded)"</span>
+}
+<span class="kw">Test-Puerto</span> <span class="fl">-Host</span> <span class="st2">"google.com"</span> <span class="fl">-Puerto</span> <span class="nu">443</span>
+
+<span class="cm"># Try/Catch/Finally</span>
+<span class="op">try</span> {
+    <span class="kw">Get-ADUser</span> <span class="fl">-Identity</span> <span class="st2">"usuario_que_no_existe"</span>
+} <span class="op">catch</span> {
+    <span class="kw">Write-Warning</span> <span class="st2">"Error: $($_.Exception.Message)"</span>
+} <span class="op">finally</span> {
+    <span class="kw">Write-Output</span> <span class="st2">"Siempre se ejecuta"</span>
+}
+
+<span class="cm"># Detener en cualquier error</span>
+<span class="va">$ErrorActionPreference</span> = <span class="st2">"Stop"</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="st ac" style="padding-top:14px">&#128203; One-liners esenciales</div>
+  <table class="qr">
+    <thead><tr><th>Cmdlet / expresion</th><th>Que hace</th></tr></thead>
+    <tbody>
+      <tr><td class="mp">Get-Command *network*</td><td>Buscar cmdlets que contengan "network"</td></tr>
+      <tr><td class="mp">$env:USERNAME</td><td>Usuario actual del sistema</td></tr>
+      <tr><td class="mp">$env:COMPUTERNAME</td><td>Nombre del equipo</td></tr>
+      <tr><td class="mp">(Get-Date).ToString("yyyy-MM-dd")</td><td>Fecha formateada para logs</td></tr>
+      <tr><td class="mp">Measure-Command { cmd }</td><td>Medir tiempo de ejecucion</td></tr>
+      <tr><td class="mp">Out-GridView</td><td>Ver resultados en ventana grafica filtrable</td></tr>
+      <tr><td class="mp">Tee-Object -FilePath log.txt</td><td>Mostrar en pantalla Y guardar en fichero</td></tr>
+      <tr><td class="mp">Get-Alias ls</td><td>Ver a que cmdlet apunta un alias</td></tr>
+      <tr><td class="mp">history</td><td>Ver historial de comandos de la sesion</td></tr>
+      <tr><td class="mp">Set-Clipboard -Value $var</td><td>Copiar variable al portapapeles</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="panel" id="p-sistema">
+  <div class="st bl">&#128187; Sistema y Procesos</div>
+  <div class="card">
+    <div class="ah" onclick="togAcc(this)">
+      <div class="ah-l"><div class="aico bl">&#128187;</div><div><div class="atit">Informacion del sistema</div><div class="asub">Hardware, OS, uptime, actualizaciones</div></div></div><span class="aarr">&#9660;</span>
+    </div>
+    <div class="ab">
+      <div class="cmd"><div class="cb"><span class="cl">&#128187; PowerShell</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+        <div class="cd"><span class="cm"># Info general del sistema</span>
+<span class="kw">Get-ComputerInfo</span> | <span class="kw">Select-Object</span> WindowsProductName, TotalPhysicalMemory, CsProcessors
+
+<span class="cm"># Uptime del servidor</span>
+<span class="va">$boot</span> = (<span class="kw">Get-CimInstance</span> Win32_OperatingSystem).LastBootUpTime
+(<span class="kw">Get-Date</span>) - <span class="va">$boot</span>
+
+<span class="cm"># CPU uso actual</span>
+<span class="kw">Get-CimInstance</span> Win32_Processor | <span class="kw">Select-Object</span> Name, NumberOfCores, LoadPercentage
+
+<span class="cm"># RAM libre y total</span>
+<span class="kw">Get-CimInstance</span> Win32_OperatingSystem | <span class="kw">Select-Object</span> @{n=<span class="st2">"RAM_Total_GB"</span>;e={[math]::Round(<span class="va">$_</span>.TotalVisibleMemorySize/1MB,<span class="nu">1</span>)}}, @{n=<span class="st2">"RAM_Libre_GB"</span>;e={[math]::Round(<span class="va">$_</span>.FreePhysicalMemory/1MB,<span class="nu">1</span>)}}
+
+<span class="cm"># Ultimas 10 actualizaciones instaladas</span>
+<span class="kw">Get-HotFix</span> | <span class="kw">Sort-Object</span> InstalledOn <span class="fl">-Descending</span> | <span class="kw">Select-Object</span> <span class="fl">-First</span> <span class="nu">10</span>
+
+<span class="cm"># Programas instalados</span>
+<span class="kw">Get-ItemProperty</span> HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | <span class="kw">Select-Object</span> DisplayName, DisplayVersion | <span class="kw">Where-Object</span> DisplayName | <span class="kw">Sort-Object</span> DisplayName</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ah" onclick="togAcc(this)">
+      <div class="ah-l"><div class="aico bl">&#9881;</div><div><div class="atit">Servicios de Windows</div><div class="asub">Gestionar, iniciar, detener, arranque</div></div></div><span class="aarr">&#9660;</span>
+    </div>
+    <div class="ab">
+      <div class="cmd"><div class="cb"><span class="cl">&#128187; PowerShell</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+        <div class="cd"><span class="cm"># Ver todos los servicios</span>
+<span class="kw">Get-Service</span>
+<span class="cm"># Solo los que corren</span>
+<span class="kw">Get-Service</span> | <span class="kw">Where-Object</span> Status <span class="fl">-eq</span> Running
+<span class="cm"># Iniciar / Detener / Reiniciar</span>
+<span class="kw">Start-Service</span>   <span class="fl">-Name</span> <span class="st2">"Spooler"</span>
+<span class="kw">Stop-Service</span>    <span class="fl">-Name</span> <span class="st2">"Spooler"</span>
+<span class="kw">Restart-Service</span> <span class="fl">-Name</span> <span class="st2">"Spooler"</span> <span class="fl">-Force</span>
+<span class="cm"># Cambiar tipo de inicio</span>
+<span class="kw">Set-Service</span> <span class="fl">-Name</span> <span class="st2">"Spooler"</span> <span class="fl">-StartupType</span> Automatic
+<span class="kw">Set-Service</span> <span class="fl">-Name</span> <span class="st2">"Spooler"</span> <span class="fl">-StartupType</span> Disabled
+<span class="cm"># Servicios automaticos que estan detenidos</span>
+<span class="kw">Get-Service</span> | <span class="kw">Where-Object</span> { <span class="va">$_</span>.StartType <span class="fl">-eq</span> <span class="st2">"Automatic"</span> <span class="fl">-and</span> <span class="va">$_</span>.Status <span class="fl">-ne</span> <span class="st2">"Running"</span> }</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ah" onclick="togAcc(this)">
+      <div class="ah-l"><div class="aico bl">&#128168;</div><div><div class="atit">Procesos</div><div class="asub">Top CPU/RAM, matar procesos</div></div></div><span class="aarr">&#9660;</span>
+    </div>
+    <div class="ab">
+      <div class="cmd"><div class="cb"><span class="cl">&#128187; PowerShell</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+        <div class="cd"><span class="cm"># Top 10 por CPU</span>
+<span class="kw">Get-Process</span> | <span class="kw">Sort-Object</span> CPU <span class="fl">-Desc</span> | <span class="kw">Select-Object</span> <span class="fl">-First</span> <span class="nu">10</span> Name,Id,CPU
+
+<span class="cm"># Top 10 por RAM en MB</span>
+<span class="kw">Get-Process</span> | <span class="kw">Sort-Object</span> WorkingSet <span class="fl">-Desc</span> | <span class="kw">Select-Object</span> <span class="fl">-First</span> <span class="nu">10</span> Name,@{n=<span class="st2">"MB"</span>;e={[math]::Round(<span class="va">$_</span>.WorkingSet/1MB,<span class="nu">1</span>)}}
+
+<span class="cm"># Matar proceso por nombre</span>
+<span class="kw">Stop-Process</span> <span class="fl">-Name</span> <span class="st2">"notepad"</span> <span class="fl">-Force</span>
+<span class="cm"># Matar por PID</span>
+<span class="kw">Stop-Process</span> <span class="fl">-Id</span> <span class="nu">1234</span> <span class="fl">-Force</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ah" onclick="togAcc(this)">
+      <div class="ah-l"><div class="aico bl">&#128196;</div><div><div class="atit">Logs de eventos de Windows</div><div class="asub">Event Viewer desde PowerShell</div></div></div><span class="aarr">&#9660;</span>
+    </div>
+    <div class="ab">
+      <div class="cmd"><div class="cb"><span class="cl">&#128187; PowerShell</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+        <div class="cd"><span class="cm"># Ultimos 20 errores del sistema</span>
+<span class="kw">Get-EventLog</span> <span class="fl">-LogName</span> System <span class="fl">-EntryType</span> Error <span class="fl">-Newest</span> <span class="nu">20</span>
+
+<span class="cm"># Buscar evento por ID - logon fallido</span>
+<span class="kw">Get-WinEvent</span> <span class="fl">-FilterHashtable</span> @{LogName=<span class="st2">"Security"</span>; Id=<span class="nu">4625</span>} <span class="fl">-MaxEvents</span> <span class="nu">20</span>
+<span class="cm"># 4625=logon fallido 4624=logon OK 4634=logoff 4740=cuenta bloqueada</span>
+
+<span class="cm"># Errores del sistema en las ultimas 24h</span>
+<span class="kw">Get-WinEvent</span> <span class="fl">-FilterHashtable</span> @{LogName=<span class="st2">"System"</span>; Level=<span class="nu">2</span>; StartTime=(<span class="kw">Get-Date</span>).AddHours(<span class="fl">-24</span>)}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="p-red">
+  <div class="st cy">&#127760; Red y Conectividad</div>
+  <div class="card">
+    <div class="ah" onclick="togAcc(this)">
+      <div class="ah-l"><div class="aico cy">&#128268;</div><div><div class="atit">Interfaces y configuracion IP</div><div class="asub">Ver, configurar, rutas</div></div></div><span class="aarr">&#9660;</span>
+    </div>
+    <div class="ab">
+      <div class="cmd"><div class="cb"><span class="cl">&#128187; PowerShell</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+        <div class="cd"><span class="cm"># Ver adaptadores</span>
+<span class="kw">Get-NetAdapter</span> | <span class="kw">Select-Object</span> Name, Status, LinkSpeed, MacAddress
+<span class="cm"># Ver IPs IPv4</span>
+<span class="kw">Get-NetIPAddress</span> | <span class="kw">Where-Object</span> AddressFamily <span class="fl">-eq</span> IPv4 | <span class="kw">Select-Object</span> InterfaceAlias, IPAddress, PrefixLength
+<span class="cm"># Tabla de rutas - gateway por defecto</span>
+<span class="kw">Get-NetRoute</span> | <span class="kw">Where-Object</span> DestinationPrefix <span class="fl">-eq</span> <span class="st2">"0.0.0.0/0"</span>
+<span class="cm"># Configurar IP estatica</span>
+<span class="kw">New-NetIPAddress</span> <span class="fl">-InterfaceAlias</span> <span class="st2">"Ethernet"</span> <span class="fl">-IPAddress</span> <span class="st2">"192.168.1.100"</span> <span class="fl">-PrefixLength</span> <span class="nu">24</span> <span class="fl">-DefaultGateway</span> <span class="st2">"192.168.1.1"</span>
+<span class="cm"># Configurar DNS</span>
+<span class="kw">Set-DnsClientServerAddress</span> <span class="fl">-InterfaceAlias</span> <span class="st2">"Ethernet"</span> <span class="fl">-ServerAddresses</span> <span class="st2">"192.168.1.10"</span>,<span class="st2">"8.8.8.8"</span>
+<span class="cm"># Limpiar cache DNS</span>
+<span class="kw">Clear-DnsClientCache</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ah" onclick="togAcc(this)">
+      <div class="ah-l"><div class="aico cy">&#128270;</div><div><div class="atit">Diagnostico de conectividad</div><div class="asub">Test-NetConnection, DNS, puertos</div></div></div><span class="aarr">&#9660;</span>
+    </div>
+    <div class="ab">
+      <div class="cmd"><div class="cb"><span class="cl">&#128187; PowerShell</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+        <div class="cd"><span class="cm"># Ping</span>
+<span class="kw">Test-NetConnection</span> 8.8.8.8
+<span class="cm"># Test TCP a puerto especifico</span>
+<span class="kw">Test-NetConnection</span> <span class="fl">-ComputerName</span> google.com <span class="fl">-Port</span> <span class="nu">443</span>
+<span class="cm"># Traceroute</span>
+<span class="kw">Test-NetConnection</span> 8.8.8.8 <span class="fl">-TraceRoute</span>
+<span class="cm"># DNS lookup</span>
+<span class="kw">Resolve-DnsName</span> google.com
+<span class="kw">Resolve-DnsName</span> <span class="fl">-Name</span> google.com <span class="fl">-Type</span> MX
+<span class="cm"># Puertos TCP en escucha con proceso</span>
+<span class="kw">Get-NetTCPConnection</span> <span class="fl">-State</span> Listen | <span class="kw">Select-Object</span> LocalPort, OwningProcess | <span class="kw">Sort-Object</span> LocalPort
+<span class="cm"># Que proceso usa el puerto 80</span>
+<span class="kw">Get-NetTCPConnection</span> <span class="fl">-LocalPort</span> <span class="nu">80</span> | <span class="kw">Select-Object</span> State, OwningProcess</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ah" onclick="togAcc(this)">
+      <div class="ah-l"><div class="aico cy">&#128202;</div><div><div class="atit">Ejecucion remota - WinRM / PSSession</div><div class="asub">Gestionar servidores en masa</div></div></div><span class="aarr">&#9660;</span>
+    </div>
+    <div class="ab">
+      <div class="cmd"><div class="cb"><span class="cl">&#128187; PowerShell (Admin)</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+        <div class="cd"><span class="cm"># Habilitar WinRM en servidor destino</span>
+<span class="kw">Enable-PSRemoting</span> <span class="fl">-Force</span>
+<span class="cm"># Ejecutar comando en servidor remoto</span>
+<span class="kw">Invoke-Command</span> <span class="fl">-ComputerName</span> <span class="st2">"SRV-APP01"</span> <span class="fl">-ScriptBlock</span> { <span class="kw">Get-Service</span> W3SVC }
+<span class="cm"># Sesion interactiva remota</span>
+<span class="kw">Enter-PSSession</span> <span class="fl">-ComputerName</span> <span class="st2">"SRV-APP01"</span>
+<span class="cm"># Mismo comando en varios servidores</span>
+<span class="va">$srvs</span> = <span class="op">@(</span><span class="st2">"SRV-APP01"</span>,<span class="st2">"SRV-APP02"</span>,<span class="st2">"SRV-DB01"</span><span class="op">)</span>
+<span class="kw">Invoke-Command</span> <span class="fl">-ComputerName</span> <span class="va">$srvs</span> <span class="fl">-ScriptBlock</span> { hostname; (Get-Date) }</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="p-ad">
+  <div class="st ac">&#127968; Active Directory - One-liners</div>
+  <div class="al ps"><div class="ai">&#128161;</div><div><div class="at">Modulo requerido</div>Import-Module ActiveDirectory - ya incluido si el servidor tiene RSAT o es un DC</div></div>
+  <div class="card">
+    <div class="ah" onclick="togAcc(this)">
+      <div class="ah-l"><div class="aico">&#128100;</div><div><div class="atit">Usuarios AD - consultas y acciones</div><div class="asub">Get-ADUser y cmdlets de gestion</div></div></div><span class="aarr">&#9660;</span>
+    </div>
+    <div class="ab">
+      <div class="cmd"><div class="cb"><span class="cl">&#128187; PowerShell</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+        <div class="cd"><span class="cm"># Buscar usuario por nombre</span>
+<span class="kw">Get-ADUser</span> <span class="fl">-Filter</span> <span class="st2">"Name -like 'Juan*'"</span> | <span class="kw">Select-Object</span> Name, SamAccountName, Enabled
+
+<span class="cm"># Ver estado completo de una cuenta</span>
+<span class="kw">Get-ADUser</span> <span class="fl">-Identity</span> <span class="st2">"j.lopez"</span> <span class="fl">-Properties</span> * | <span class="kw">Select-Object</span> Name, Department, LockedOut, PasswordExpired, LastLogonDate
+
+<span class="cm"># Cuentas bloqueadas</span>
+<span class="kw">Search-ADAccount</span> <span class="fl">-LockedOut</span>
+
+<span class="cm"># Inactivos mas de 90 dias</span>
+<span class="kw">Get-ADUser</span> <span class="fl">-Filter</span> <span class="st2">"LastLogonDate -lt '$((Get-Date).AddDays(-90))' -and Enabled -eq 'True'"</span> <span class="fl">-Properties</span> LastLogonDate | <span class="kw">Select-Object</span> Name, LastLogonDate
+
+<span class="cm"># Desbloquear cuenta</span>
+<span class="kw">Unlock-ADAccount</span> <span class="fl">-Identity</span> <span class="st2">"j.lopez"</span>
+<span class="cm"># Desbloquear todas de golpe</span>
+<span class="kw">Search-ADAccount</span> <span class="fl">-LockedOut</span> | <span class="kw">Unlock-ADAccount</span>
+
+<span class="cm"># Reset de contrasena</span>
+<span class="kw">Set-ADAccountPassword</span> <span class="fl">-Identity</span> <span class="st2">"j.lopez"</span> <span class="fl">-Reset</span> <span class="fl">-NewPassword</span> (ConvertTo-SecureString <span class="st2">"P@ssw0rd!"</span> <span class="fl">-AsPlainText</span> <span class="fl">-Force</span>)
+<span class="kw">Set-ADUser</span> <span class="fl">-Identity</span> <span class="st2">"j.lopez"</span> <span class="fl">-ChangePasswordAtLogon</span> <span class="va">$true</span>
+
+<span class="cm"># Deshabilitar / habilitar</span>
+<span class="kw">Disable-ADAccount</span> <span class="fl">-Identity</span> <span class="st2">"j.lopez"</span>
+<span class="kw">Enable-ADAccount</span>  <span class="fl">-Identity</span> <span class="st2">"j.lopez"</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ah" onclick="togAcc(this)">
+      <div class="ah-l"><div class="aico">&#128101;</div><div><div class="atit">Grupos AD - miembros y pertenencias</div><div class="asub">Get-ADGroupMember y Add/Remove</div></div></div><span class="aarr">&#9660;</span>
+    </div>
+    <div class="ab">
+      <div class="cmd"><div class="cb"><span class="cl">&#128187; PowerShell</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+        <div class="cd"><span class="cm"># Ver miembros de un grupo</span>
+<span class="kw">Get-ADGroupMember</span> <span class="fl">-Identity</span> <span class="st2">"GG_RRHH"</span> <span class="fl">-Recursive</span> | <span class="kw">Select-Object</span> Name, SamAccountName
+
+<span class="cm"># Grupos de un usuario</span>
+<span class="kw">Get-ADPrincipalGroupMembership</span> <span class="fl">-Identity</span> <span class="st2">"j.lopez"</span> | <span class="kw">Select-Object</span> Name | <span class="kw">Sort-Object</span> Name
+
+<span class="cm"># Anadir usuario a grupo</span>
+<span class="kw">Add-ADGroupMember</span> <span class="fl">-Identity</span> <span class="st2">"GG_RRHH"</span> <span class="fl">-Members</span> <span class="st2">"j.lopez"</span>,<span class="st2">"m.garcia"</span>
+
+<span class="cm"># Quitar usuario de grupo</span>
+<span class="kw">Remove-ADGroupMember</span> <span class="fl">-Identity</span> <span class="st2">"GG_RRHH"</span> <span class="fl">-Members</span> <span class="st2">"j.lopez"</span> <span class="fl">-Confirm:</span><span class="va">$false</span>
+
+<span class="cm"># Grupos vacios</span>
+<span class="kw">Get-ADGroup</span> <span class="fl">-Filter</span> * | <span class="kw">Where-Object</span> { (<span class="kw">Get-ADGroupMember</span> <span class="va">$_</span>).Count <span class="fl">-eq</span> <span class="nu">0</span> } | <span class="kw">Select-Object</span> Name
+
+<span class="cm"># Exportar miembros a CSV</span>
+<span class="kw">Get-ADGroupMember</span> <span class="st2">"GG_RRHH"</span> | <span class="kw">Select-Object</span> Name, SamAccountName | <span class="kw">Export-Csv</span> <span class="st2">"C:\miembros.csv"</span> <span class="fl">-NoTypeInformation</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ah" onclick="togAcc(this)">
+      <div class="ah-l"><div class="aico">&#128270;</div><div><div class="atit">Diagnostico AD</div><div class="asub">Salud del dominio desde PowerShell</div></div></div><span class="aarr">&#9660;</span>
+    </div>
+    <div class="ab">
+      <div class="cmd"><div class="cb"><span class="cl">&#128187; PowerShell / cmd</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+        <div class="cd"><span class="cm"># Estado del dominio</span>
+<span class="kw">Get-ADDomain</span>
+<span class="cm"># Roles FSMO</span>
+netdom query fsmo
+<span class="cm"># Servicios criticos del DC</span>
+<span class="kw">Get-Service</span> ADWS,DNS,Kerberos,Netlogon,NTDS | <span class="kw">Select-Object</span> Name, Status
+<span class="cm"># Test replicacion</span>
+dcdiag /test:replications /v
+repadmin /replsummary
+<span class="cm"># GPOs aplicadas al equipo actual</span>
+gpresult /r</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="p-archivos">
+  <div class="st am">&#128193; Archivos y Discos</div>
+  <div class="card">
+    <div class="ah" onclick="togAcc(this)">
+      <div class="ah-l"><div class="aico am">&#128193;</div><div><div class="atit">Operaciones con archivos</div><div class="asub">Buscar, copiar, mover, eliminar</div></div></div><span class="aarr">&#9660;</span>
+    </div>
+    <div class="ab">
+      <div class="cmd"><div class="cb"><span class="cl">&#128187; PowerShell</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+        <div class="cd"><span class="cm"># Listar archivos con detalles</span>
+<span class="kw">Get-ChildItem</span> <span class="st2">"C:\Logs"</span> <span class="fl">-Recurse</span> | <span class="kw">Select-Object</span> Name, Length, LastWriteTime
+
+<span class="cm"># Buscar archivos por extension</span>
+<span class="kw">Get-ChildItem</span> <span class="st2">"C:\"</span> <span class="fl">-Recurse</span> <span class="fl">-Include</span> <span class="st2">"*.log"</span> <span class="fl">-ErrorAction</span> SilentlyContinue
+
+<span class="cm"># Archivos mayores de 100MB</span>
+<span class="kw">Get-ChildItem</span> <span class="st2">"C:\"</span> <span class="fl">-Recurse</span> <span class="fl">-ErrorAction</span> SilentlyContinue | <span class="kw">Where-Object</span> { <span class="va">$_</span>.Length <span class="fl">-gt</span> <span class="nu">100MB</span> } | <span class="kw">Select-Object</span> FullName, @{n=<span class="st2">"MB"</span>;e={[math]::Round(<span class="va">$_</span>.Length/1MB,<span class="nu">1</span>)}}
+
+<span class="cm"># Copiar y mover</span>
+<span class="kw">Copy-Item</span> <span class="st2">"C:\origen"</span> <span class="st2">"D:\destino"</span> <span class="fl">-Recurse</span>
+<span class="kw">Move-Item</span> <span class="st2">"C:\origen"</span> <span class="st2">"D:\destino"</span>
+
+<span class="cm"># Borrar logs de mas de 30 dias</span>
+<span class="kw">Get-ChildItem</span> <span class="st2">"C:\Logs"</span> <span class="fl">-Recurse</span> | <span class="kw">Where-Object</span> { <span class="va">$_</span>.LastWriteTime <span class="fl">-lt</span> (<span class="kw">Get-Date</span>).AddDays(<span class="fl">-30</span>) } | <span class="kw">Remove-Item</span> <span class="fl">-Force</span>
+
+<span class="cm"># Ver ultimas N lineas de un log</span>
+<span class="kw">Get-Content</span> <span class="st2">"C:\Logs\app.log"</span> <span class="fl">-Tail</span> <span class="nu">50</span>
+
+<span class="cm"># Buscar texto en archivos (grep de PowerShell)</span>
+<span class="kw">Select-String</span> <span class="fl">-Path</span> <span class="st2">"C:\Logs\*.log"</span> <span class="fl">-Pattern</span> <span class="st2">"ERROR"</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ah" onclick="togAcc(this)">
+      <div class="ah-l"><div class="aico am">&#128190;</div><div><div class="atit">Discos y espacio</div><div class="asub">Ver uso, volumenes, top carpetas</div></div></div><span class="aarr">&#9660;</span>
+    </div>
+    <div class="ab">
+      <div class="cmd"><div class="cb"><span class="cl">&#128187; PowerShell</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+        <div class="cd"><span class="cm"># Espacio en todos los discos</span>
+<span class="kw">Get-PSDrive</span> <span class="fl">-PSProvider</span> FileSystem | <span class="kw">Select-Object</span> Name, @{n=<span class="st2">"Usado_GB"</span>;e={[math]::Round(<span class="va">$_</span>.Used/1GB,<span class="nu">1</span>)}}, @{n=<span class="st2">"Libre_GB"</span>;e={[math]::Round(<span class="va">$_</span>.Free/1GB,<span class="nu">1</span>)}}
+
+<span class="cm"># Info de volumenes</span>
+<span class="kw">Get-Volume</span> | <span class="kw">Select-Object</span> DriveLetter, FileSystemLabel, @{n=<span class="st2">"Size_GB"</span>;e={[math]::Round(<span class="va">$_</span>.Size/1GB,<span class="nu">1</span>)}}, @{n=<span class="st2">"Libre_GB"</span>;e={[math]::Round(<span class="va">$_</span>.SizeRemaining/1GB,<span class="nu">1</span>)}}, HealthStatus
+
+<span class="cm"># Shares SMB activos</span>
+<span class="kw">Get-SmbShare</span> | <span class="kw">Select-Object</span> Name, Path, Description
+
+<span class="cm"># Crear share</span>
+<span class="kw">New-SmbShare</span> <span class="fl">-Name</span> <span class="st2">"Datos"</span> <span class="fl">-Path</span> <span class="st2">"C:\Compartido\Datos"</span> <span class="fl">-FullAccess</span> <span class="st2">"Everyone"</span>
+
+<span class="cm"># Permisos NTFS con icacls</span>
+icacls <span class="st2">"C:\Compartido\RRHH"</span>
+icacls <span class="st2">"C:\Compartido\RRHH"</span> /grant <span class="st2">"EMPRESA\GL_RRHH_RW:(OI)(CI)M"</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="p-scripts">
+  <div class="st gr">&#128196; Scripts de Produccion</div>
+  <div class="al ok"><div class="ai">&#128196;</div><div><div class="at">Listos para usar</div>Copia, ajusta las variables del principio y ejecuta. Todos tienen manejo de errores y logging</div></div>
+
+  <div class="card">
+    <div class="ah" onclick="togAcc(this)">
+      <div class="ah-l"><div class="aico gr">&#128100;</div><div><div class="atit">Informe completo de usuarios AD</div><div class="asub">Exporta estado, bloqueos, inactividad a CSV</div></div></div><span class="aarr">&#9660;</span>
+    </div>
+    <div class="ab">
+      <div class="cmd"><div class="cb"><span class="cl">&#128187; informe-usuarios.ps1</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+        <div class="cd"><span class="cm"># ========================================</span>
+<span class="cm"># INFORME USUARIOS AD - exporta a CSV</span>
+<span class="cm"># ========================================</span>
+<span class="va">$out</span> = <span class="st2">"C:\Informes\usuarios_$(Get-Date -Format 'yyyyMMdd').csv"</span>
+<span class="kw">New-Item</span> <span class="fl">-ItemType</span> Directory <span class="st2">"C:\Informes"</span> <span class="fl">-Force</span> | <span class="kw">Out-Null</span>
+
+<span class="kw">Get-ADUser</span> <span class="fl">-Filter</span> * <span class="fl">-Properties</span> DisplayName,Department,Title,Enabled,LockedOut,PasswordExpired,LastLogonDate,PasswordLastSet,EmailAddress |
+<span class="kw">Select-Object</span> @{n=<span class="st2">"Nombre"</span>;e={<span class="va">$_</span>.DisplayName}},
+              @{n=<span class="st2">"Usuario"</span>;e={<span class="va">$_</span>.SamAccountName}},
+              Department, Title, Enabled, LockedOut, PasswordExpired,
+              @{n=<span class="st2">"UltimoAcceso"</span>;e={<span class="va">$_</span>.LastLogonDate}},
+              @{n=<span class="st2">"UltimaPass"</span>;e={<span class="va">$_</span>.PasswordLastSet}},
+              EmailAddress |
+<span class="kw">Export-Csv</span> <span class="va">$out</span> <span class="fl">-NoTypeInformation</span> <span class="fl">-Encoding</span> UTF8
+
+<span class="kw">Write-Host</span> <span class="st2">"Informe generado: $out"</span> <span class="fl">-ForegroundColor</span> Green</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ah" onclick="togAcc(this)">
+      <div class="ah-l"><div class="aico gr">&#128682;</div><div><div class="atit">Limpieza de cuentas inactivas</div><div class="asub">Deshabilita usuarios sin acceso en N dias</div></div></div><span class="aarr">&#9660;</span>
+    </div>
+    <div class="ab">
+      <div class="cmd"><div class="cb"><span class="cl">&#128187; cleanup-inactivos.ps1</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+        <div class="cd"><span class="cm"># ========================================</span>
+<span class="cm"># DESHABILITAR USUARIOS INACTIVOS</span>
+<span class="cm"># ========================================</span>
+<span class="va">$DiasInactivo</span> = <span class="nu">90</span>
+<span class="va">$OUExcluida</span>   = <span class="st2">"OU=Cuentas_Servicio,DC=empresa,DC=local"</span>
+<span class="va">$Log</span>          = <span class="st2">"C:\Logs\inactivos_$(Get-Date -Format 'yyyyMMdd').log"</span>
+<span class="va">$Corte</span>        = (<span class="kw">Get-Date</span>).AddDays(-<span class="va">$DiasInactivo</span>)
+
+<span class="va">$inactivos</span> = <span class="kw">Get-ADUser</span> <span class="fl">-Filter</span> <span class="st2">"LastLogonDate -lt '$Corte' -and Enabled -eq 'True'"</span> <span class="fl">-Properties</span> LastLogonDate,DistinguishedName |
+    <span class="kw">Where-Object</span> { <span class="va">$_</span>.DistinguishedName <span class="fl">-notlike</span> <span class="st2">"*$OUExcluida*"</span> }
+
+<span class="kw">Write-Host</span> <span class="st2">"Inactivos encontrados: $($inactivos.Count)"</span>
+
+<span class="op">foreach</span> (<span class="va">$u</span> <span class="op">in</span> <span class="va">$inactivos</span>) {
+    <span class="op">try</span> {
+        <span class="kw">Disable-ADAccount</span> <span class="fl">-Identity</span> <span class="va">$u</span>
+        <span class="va">$msg</span> = <span class="st2">"OK - $($u.SamAccountName) - Ultimo: $($u.LastLogonDate)"</span>
+        <span class="kw">Write-Host</span> <span class="va">$msg</span> <span class="fl">-ForegroundColor</span> Yellow
+    } <span class="op">catch</span> {
+        <span class="va">$msg</span> = <span class="st2">"ERROR - $($u.SamAccountName): $($_.Exception.Message)"</span>
+        <span class="kw">Write-Warning</span> <span class="va">$msg</span>
+    }
+    <span class="kw">Add-Content</span> <span class="va">$Log</span> <span class="st2">"$(Get-Date -Format 'HH:mm:ss') $msg"</span>
+}
+<span class="kw">Write-Host</span> <span class="st2">"Log: $Log"</span> <span class="fl">-ForegroundColor</span> Cyan</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ah" onclick="togAcc(this)">
+      <div class="ah-l"><div class="aico gr">&#128190;</div><div><div class="atit">Monitor de espacio en disco</div><div class="asub">Alerta cuando supera umbral en lista de servidores</div></div></div><span class="aarr">&#9660;</span>
+    </div>
+    <div class="ab">
+      <div class="cmd"><div class="cb"><span class="cl">&#128187; disk-monitor.ps1</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+        <div class="cd"><span class="cm"># ========================================</span>
+<span class="cm"># MONITOR ESPACIO EN DISCO</span>
+<span class="cm"># ========================================</span>
+<span class="va">$Servers</span>   = <span class="op">@(</span><span class="st2">"SRV-DC01"</span>, <span class="st2">"SRV-APP01"</span>, <span class="st2">"SRV-FILE01"</span><span class="op">)</span>
+<span class="va">$Umbral</span>    = <span class="nu">85</span>
+<span class="va">$Result</span>    = <span class="op">@()</span>
+
+<span class="op">foreach</span> (<span class="va">$srv</span> <span class="op">in</span> <span class="va">$Servers</span>) {
+    <span class="op">try</span> {
+        <span class="va">$discos</span> = <span class="kw">Get-WmiObject</span> <span class="fl">-ComputerName</span> <span class="va">$srv</span> <span class="fl">-Class</span> Win32_LogicalDisk <span class="fl">-Filter</span> <span class="st2">"DriveType=3"</span>
+        <span class="op">foreach</span> (<span class="va">$d</span> <span class="op">in</span> <span class="va">$discos</span>) {
+            <span class="va">$pct</span> = [math]::Round(((<span class="va">$d</span>.Size - <span class="va">$d</span>.FreeSpace) / <span class="va">$d</span>.Size) * <span class="nu">100</span>, <span class="nu">1</span>)
+            <span class="va">$Result</span> += [PSCustomObject]@{
+                Servidor=<span class="va">$srv</span>; Disco=<span class="va">$d</span>.DeviceID
+                Total=[math]::Round(<span class="va">$d</span>.Size/1GB,<span class="nu">1</span>)
+                Libre=[math]::Round(<span class="va">$d</span>.FreeSpace/1GB,<span class="nu">1</span>)
+                Uso_Pct=<span class="va">$pct</span>; Alerta=(<span class="va">$pct</span> <span class="fl">-ge</span> <span class="va">$Umbral</span>)
+            }
+            <span class="op">if</span> (<span class="va">$pct</span> <span class="fl">-ge</span> <span class="va">$Umbral</span>) { <span class="kw">Write-Warning</span> <span class="st2">"ALERTA: $srv $($d.DeviceID) al ${pct}%"</span> }
+        }
+    } <span class="op">catch</span> { <span class="kw">Write-Warning</span> <span class="st2">"Sin acceso a $srv"</span> }
+}
+<span class="va">$Result</span> | <span class="kw">Format-Table</span> <span class="fl">-AutoSize</span>
+<span class="va">$Result</span> | <span class="kw">Export-Csv</span> <span class="st2">"C:\Informes\discos_$(Get-Date -Format 'yyyyMMdd').csv"</span> <span class="fl">-NoTypeInformation</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ah" onclick="togAcc(this)">
+      <div class="ah-l"><div class="aico gr">&#128200;</div><div><div class="atit">Health check del servidor</div><div class="asub">CPU, RAM, disco y servicios en un vistazo con colores</div></div></div><span class="aarr">&#9660;</span>
+    </div>
+    <div class="ab">
+      <div class="cmd"><div class="cb"><span class="cl">&#128187; server-healthcheck.ps1</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+        <div class="cd"><span class="cm"># ========================================</span>
+<span class="cm"># HEALTH CHECK DEL SERVIDOR</span>
+<span class="cm"># ========================================</span>
+<span class="kw">Clear-Host</span>
+<span class="kw">Write-Host</span> <span class="st2">"== HEALTH CHECK - $(hostname) - $(Get-Date -Format 'dd/MM HH:mm') =="</span> <span class="fl">-ForegroundColor</span> Cyan
+
+<span class="cm"># Uptime</span>
+<span class="va">$boot</span> = (<span class="kw">Get-CimInstance</span> Win32_OperatingSystem).LastBootUpTime
+<span class="kw">Write-Host</span> <span class="st2">"Uptime: $([math]::Round(((Get-Date)-$boot).TotalDays,1)) dias"</span>
+
+<span class="cm"># CPU</span>
+<span class="va">$cpu</span> = (<span class="kw">Get-CimInstance</span> Win32_Processor).LoadPercentage
+<span class="va">$c</span>   = <span class="op">if</span>(<span class="va">$cpu</span><span class="fl">-gt</span><span class="nu">85</span>){<span class="st2">"Red"</span>}<span class="op">elseif</span>(<span class="va">$cpu</span><span class="fl">-gt</span><span class="nu">60</span>){<span class="st2">"Yellow"</span>}<span class="op">else</span>{<span class="st2">"Green"</span>}
+<span class="kw">Write-Host</span> <span class="st2">"CPU: ${cpu}%"</span> <span class="fl">-ForegroundColor</span> <span class="va">$c</span>
+
+<span class="cm"># RAM</span>
+<span class="va">$os</span>  = <span class="kw">Get-CimInstance</span> Win32_OperatingSystem
+<span class="va">$ram</span> = [math]::Round((<span class="va">$os</span>.TotalVisibleMemorySize-<span class="va">$os</span>.FreePhysicalMemory)/<span class="va">$os</span>.TotalVisibleMemorySize*<span class="nu">100</span>,<span class="nu">1</span>)
+<span class="va">$c</span>   = <span class="op">if</span>(<span class="va">$ram</span><span class="fl">-gt</span><span class="nu">90</span>){<span class="st2">"Red"</span>}<span class="op">elseif</span>(<span class="va">$ram</span><span class="fl">-gt</span><span class="nu">75</span>){<span class="st2">"Yellow"</span>}<span class="op">else</span>{<span class="st2">"Green"</span>}
+<span class="kw">Write-Host</span> <span class="st2">"RAM: ${ram}% usada"</span> <span class="fl">-ForegroundColor</span> <span class="va">$c</span>
+
+<span class="cm"># Discos</span>
+<span class="kw">Get-PSDrive</span> <span class="fl">-PSProvider</span> FileSystem | <span class="kw">ForEach-Object</span> {
+    <span class="va">$p</span> = <span class="op">if</span>(<span class="va">$_</span>.Used<span class="fl">-gt</span><span class="nu">0</span>){[math]::Round(<span class="va">$_</span>.Used/(<span class="va">$_</span>.Used+<span class="va">$_</span>.Free)*<span class="nu">100</span>,<span class="nu">1</span>)}<span class="op">else</span>{<span class="nu">0</span>}
+    <span class="va">$c</span> = <span class="op">if</span>(<span class="va">$p</span><span class="fl">-gt</span><span class="nu">90</span>){<span class="st2">"Red"</span>}<span class="op">elseif</span>(<span class="va">$p</span><span class="fl">-gt</span><span class="nu">80</span>){<span class="st2">"Yellow"</span>}<span class="op">else</span>{<span class="st2">"Green"</span>}
+    <span class="kw">Write-Host</span> <span class="st2">"Disco $($_.Name): ${p}% (Libre: $([math]::Round($_.Free/1GB,1))GB)"</span> <span class="fl">-ForegroundColor</span> <span class="va">$c</span>
+}
+
+<span class="cm"># Servicios criticos</span>
+<span class="op">foreach</span> (<span class="va">$svc</span> <span class="op">in</span> <span class="op">@(</span><span class="st2">"Netlogon"</span>,<span class="st2">"DNS"</span>,<span class="st2">"W32Time"</span>,<span class="st2">"NTDS"</span><span class="op">)</span>) {
+    <span class="op">try</span> {
+        <span class="va">$s</span>= <span class="kw">Get-Service</span> <span class="va">$svc</span> <span class="fl">-EA</span> Stop
+        <span class="va">$c</span>=<span class="op">if</span>(<span class="va">$s</span>.Status<span class="fl">-eq</span><span class="st2">"Running"</span>){<span class="st2">"Green"</span>}<span class="op">else</span>{<span class="st2">"Red"</span>}
+        <span class="kw">Write-Host</span> <span class="st2">"$($s.Name): $($s.Status)"</span> <span class="fl">-ForegroundColor</span> <span class="va">$c</span>
+    } <span class="op">catch</span> { <span class="kw">Write-Host</span> <span class="st2">"$svc: N/A"</span> <span class="fl">-ForegroundColor</span> DarkGray }
+}
+<span class="kw">Write-Host</span> <span class="st2">"=========================================="</span> <span class="fl">-ForegroundColor</span> Cyan</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ah" onclick="togAcc(this)">
+      <div class="ah-l"><div class="aico gr">&#128101;</div><div><div class="atit">Alta masiva de usuarios desde CSV</div><div class="asub">Crear N usuarios en AD de un fichero</div></div></div><span class="aarr">&#9660;</span>
+    </div>
+    <div class="ab">
+      <div class="cmd"><div class="cb"><span class="cl">&#128187; CSV: nombre,sam,ou,departamento,titulo</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+        <div class="cd">nombre,sam,ou,departamento,titulo
+Juan Lopez,j.lopez,OU=RRHH,RRHH,Tecnico
+Maria Garcia,m.garcia,OU=IT,IT,Administradora</div>
+      </div>
+      <div class="cmd"><div class="cb"><span class="cl">&#128187; alta-masiva.ps1</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+        <div class="cd"><span class="cm"># ========================================</span>
+<span class="cm"># ALTA MASIVA USUARIOS AD DESDE CSV</span>
+<span class="cm"># ========================================</span>
+<span class="va">$Csv</span>  = <span class="st2">"C:\usuarios_nuevos.csv"</span>
+<span class="va">$Pass</span> = <span class="st2">"Empresa2024!"</span>
+<span class="va">$Log</span>  = <span class="st2">"C:\Logs\alta_masiva_$(Get-Date -Format 'yyyyMMdd').log"</span>
+
+<span class="kw">Import-Csv</span> <span class="va">$Csv</span> | <span class="kw">ForEach-Object</span> {
+    <span class="op">try</span> {
+        <span class="kw">New-ADUser</span> <span class="fl">-Name</span> <span class="va">$_</span>.nombre <span class="fl">-SamAccountName</span> <span class="va">$_</span>.sam <span class="fl">-UserPrincipalName</span> <span class="st2">"$($_.sam)@empresa.local"</span> <span class="fl">-Path</span> <span class="st2">"$($_.ou),DC=empresa,DC=local"</span> <span class="fl">-Department</span> <span class="va">$_</span>.departamento <span class="fl">-Title</span> <span class="va">$_</span>.titulo <span class="fl">-AccountPassword</span> (ConvertTo-SecureString <span class="va">$Pass</span> <span class="fl">-AsPlainText</span> <span class="fl">-Force</span>) <span class="fl">-Enabled</span> <span class="va">$true</span> <span class="fl">-ChangePasswordAtLogon</span> <span class="va">$true</span>
+        <span class="va">$msg</span> = <span class="st2">"OK - $($_.sam)"</span>
+        <span class="kw">Write-Host</span> <span class="va">$msg</span> <span class="fl">-ForegroundColor</span> Green
+    } <span class="op">catch</span> {
+        <span class="va">$msg</span> = <span class="st2">"ERROR - $($_.sam): $($_.Exception.Message)"</span>
+        <span class="kw">Write-Warning</span> <span class="va">$msg</span>
+    }
+    <span class="kw">Add-Content</span> <span class="va">$Log</span> <span class="st2">"$(Get-Date -Format 'HH:mm:ss') $msg"</span>
+}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="p-check">
+  <div class="st ac">&#9989; Checklist PowerShell SysAdmin</div>
+  <div class="pwrap">
+    <div class="pwt"><span>Progreso total</span><span id="ch-lbl">0 / 20</span></div>
+    <div class="ptrack"><div class="pfill" id="ch-fill"></div></div>
+    <div class="pcount" id="ch-sub">Completa los items</div>
+  </div>
+  <div class="g2">
+    <div>
+      <div style="font-size:10px;font-family:var(--mono);color:var(--acc2);margin-bottom:8px;font-weight:700">&#9889; Base y Pipeline</div>
+      <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">BASE</span>$PSVersionTable verificado</span></div>
+      <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">BASE</span>ExecutionPolicy configurada correctamente</span></div>
+      <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">BASE</span>Get-Help y Get-Member usados con soltura</span></div>
+      <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">BASE</span>Pipeline | Where-Object | Select-Object dominado</span></div>
+      <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">BASE</span>Try/Catch implementado en scripts propios</span></div>
+      <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">BASE</span>Export-Csv e Import-Csv funcionan</span></div>
+      <div style="font-size:10px;font-family:var(--mono);color:var(--blu2);margin-top:14px;margin-bottom:8px;font-weight:700">&#128187; Sistema y Red</div>
+      <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">SYS</span>Get-Service, Start/Stop/Restart-Service</span></div>
+      <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">SYS</span>Get-EventLog y Get-WinEvent para errores</span></div>
+      <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">SYS</span>Get-Process | Sort CPU -Desc como reflejo</span></div>
+      <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">NET</span>Test-NetConnection -Port para test TCP</span></div>
+    </div>
+    <div>
+      <div style="font-size:10px;font-family:var(--mono);color:var(--acc2);margin-bottom:8px;font-weight:700">&#127968; AD y Archivos</div>
+      <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">AD</span>Get-ADUser -Filter con -Properties *</span></div>
+      <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">AD</span>Search-ADAccount -LockedOut funciona</span></div>
+      <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">AD</span>Get-ADGroupMember y Add/Remove-ADGroupMember</span></div>
+      <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">AD</span>Unlock-ADAccount y Set-ADAccountPassword</span></div>
+      <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">FILE</span>Get-ChildItem -Recurse -Include dominado</span></div>
+      <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">FILE</span>Select-String para buscar texto en logs</span></div>
+      <div style="font-size:10px;font-family:var(--mono);color:var(--grn2);margin-top:14px;margin-bottom:8px;font-weight:700">&#128196; Scripts</div>
+      <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">SCR</span>server-healthcheck ejecuta sin errores</span></div>
+      <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">SCR</span>disk-monitor adaptado a tus servidores</span></div>
+      <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">SCR</span>informe-usuarios exporta CSV correctamente</span></div>
+      <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">SCR</span>Invoke-Command en servidores remotos OK</span></div>
+    </div>
+  </div>
+  <div id="ch-done" style="display:none;margin-top:12px">
+    <div class="al ok"><div class="ai">&#127881;</div><div><div class="at">Cheatsheet completada</div>PowerShell SysAdmin dominado. One-liners, AD, red, archivos y scripts de produccion listos</div></div>
+  </div>
+</div>
+
+</div>
+<footer>
+  <div class="fi">
+    <span class="fb"><span class="a">Power</span><span class="b">Shell</span> SysAdmin Lab - Cheatsheet v1.0</span>
+    <div style="display:flex;gap:6px">
+      <span class="fv">PS 5.1 / 7.x</span><span class="fv">Windows Server</span><span class="fv">AD + Red + Scripts</span>
+    </div>
+  </div>
+</footer>
+</main>
+</div>
+
+<nav class="bnav">
+  <div class="bnav-in">
+    <button class="bb active" onclick="sw('base',this)"><span class="bi">&#9889;</span><span class="bl">Base</span></button>
+    <button class="bb" onclick="sw('sistema',this)"><span class="bi">&#128187;</span><span class="bl">Sistema</span></button>
+    <button class="bb" onclick="sw('red',this)"><span class="bi">&#127760;</span><span class="bl">Red</span></button>
+    <button class="bb" onclick="sw('ad',this)"><span class="bi">&#127968;</span><span class="bl">AD</span></button>
+    <button class="bb" onclick="sw('archivos',this)"><span class="bi">&#128193;</span><span class="bl">Archivos</span></button>
+    <button class="bb" onclick="sw('scripts',this)"><span class="bi">&#128196;</span><span class="bl">Scripts</span></button>
+    <button class="bb" onclick="sw('check',this)"><span class="bi">&#9989;</span><span class="bl">Check</span></button>
+  </div>
+</nav>
+
+<script>
+function sw(id, btn) {
+  document.querySelectorAll(".panel").forEach(function(p){ p.classList.remove("active"); });
+  document.querySelectorAll(".sb-btn, .bb").forEach(function(b){ b.classList.remove("active"); });
+  var panel = document.getElementById("p-" + id);
+  if (panel) panel.classList.add("active");
+  document.querySelectorAll(".sb-btn, .bb").forEach(function(b) {
+    var oc = b.getAttribute("onclick") || "";
+    if (oc.indexOf("'" + id + "'") !== -1) b.classList.add("active");
+  });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+function togAcc(head) {
+  var card = head.closest(".card");
+  var body = card.querySelector(".ab");
+  var isOpen = body.classList.contains("open");
+  document.querySelectorAll(".ab.open").forEach(function(b){ b.classList.remove("open"); });
+  document.querySelectorAll(".ah.open").forEach(function(h){ h.classList.remove("open"); });
+  if (!isOpen) { body.classList.add("open"); head.classList.add("open"); }
+}
+function cp(btn) {
+  var text = btn.closest(".cmd").querySelector(".cd").innerText;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(function() { flash(btn); });
+  } else {
+    var ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand("copy"); document.body.removeChild(ta); flash(btn);
+  }
+}
+function flash(btn) {
+  btn.textContent = "Copiado";
+  btn.classList.add("ok");
+  setTimeout(function(){ btn.textContent = "Copiar"; btn.classList.remove("ok"); }, 2000);
+}
+function ck(el) { el.classList.toggle("done"); updChk(); }
+function updChk() {
+  var all = document.querySelectorAll(".chi");
+  var done = document.querySelectorAll(".chi.done");
+  var total = all.length, n = done.length;
+  var pct = total > 0 ? Math.round((n / total) * 100) : 0;
+  document.getElementById("ch-fill").style.width = pct + "%";
+  document.getElementById("ch-lbl").textContent = n + " / " + total;
+  document.getElementById("ch-sub").textContent = pct === 100 ? "Todo completado" : pct + "% completado";
+  document.getElementById("sb-fill").style.width = pct + "%";
+  document.getElementById("sb-pct").textContent = pct + "%";
+  document.getElementById("sb-badge").textContent = n + "/" + total;
+  document.getElementById("ch-done").style.display = pct === 100 ? "block" : "none";
+}
+updChk();
+</script>
+</body>
+</html>
