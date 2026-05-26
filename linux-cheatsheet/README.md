@@ -11,7 +11,7 @@ Interactive Linux command reference — system, files, users, networking, UFW, c
 
 # 🚀 Live Demo
 
-👉 [Ver en GitHub Pages](https://narufortix.github.io/linux-cheatsheet/)
+👉 [Ver en GitHub Pages](https://narufortix.github.io/CheatSheet/linux-cheatsheet/)
 
 ---
 
