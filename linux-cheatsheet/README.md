@@ -1,5 +1,10 @@
 # 🐧 Linux Cheatsheet
 
+# 📸 Preview
+
+![preview](preview.png)
+
+
 Interactive Linux command reference — system, files, users, networking, UFW, cron and containers in a single HTML file. Dark cyberpunk UI.
 
 ---
@@ -55,12 +60,6 @@ Incluye más de 120+ comandos organizados por categorías:
 * Categorías organizadas
 * 100% offline
 * Single HTML file
-
----
-
-# 📸 Preview
-
-![preview](preview.png)
 
 ---
 
