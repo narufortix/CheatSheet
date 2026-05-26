@@ -1,2 +1,28 @@
 # CheatSheet
-Collection of interactive cheatsheet cheatsheetsnfor cybersecurity, auditing and system administration
+
+Collection of interactive cheatsheets for cybersecurity, pentesting, networking and system administration.
+
+## Included Cheatsheets
+
+### Linux Cheatsheet
+Interactive Linux reference focused on commands, privilege escalation, networking and system administration.
+
+### Pentesting Cheatsheet
+Interactive pentesting reference with commands, tools and techniques in a single HTML file.
+
+## Features
+
+- Interactive HTML format
+- Fast navigation
+- Dark UI
+- Quick command reference
+- Offline use
+- GitHub Pages support
+
+## Usage
+
+Open any `.html` file in your browser or use the GitHub Pages live demo if available.
+
+## Disclaimer
+
+For educational purposes and authorized security testing only.
