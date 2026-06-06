@@ -1,75 +1,55 @@
-# 🔴 Linux PrivEsc Cheatsheet
+# Linux PrivEsc Cheatsheet
 
-Interactive Linux privilege escalation reference — SUID/SGID, sudo misconfig, cron jobs, capabilities, writable files, kernel exploits and reverse shells in a single HTML file. Dark cyberpunk UI.
+> *You have a shell. Now get root.*
 
----
-
-# 🚀 Live Demo
-
-👉 [Ver en GitHub Pages](https://narufortix.github.io/CheatSheet/linux-privesc-cheatsheet/)
+Interactive privilege escalation reference for CTFs, labs and authorized audits. Built as a single HTML file — no dependencies, no installation, works offline.
 
 ---
 
-# 📄 Uso
+## What's inside
 
-Descarga `index.html` y ábrelo en cualquier navegador.
+A hands-on toolkit organized around real attack vectors, not theory:
 
-No requiere:
+| Panel | Content |
+|---|---|
+| ⚔ **Vectores** | 120+ techniques across 10 attack categories with searchable commands |
+| 🐚 **Shells** | Ready-to-copy reverse shells + full TTY upgrade walkthrough |
+| ◉ **Checklist** | Step-by-step methodology with progress tracking |
+| ◈ **Info** | Severity matrix, key resources and quick-reference cards |
 
-* instalación
-* dependencias
-* backend
-* conexión externa
-
-Todo funciona offline en un único archivo HTML.
-
----
-
-# ⚡ Contenido
-
-Incluye 120+ técnicas organizadas por vectores:
-
-* ⚔️ Enumeración inicial
-* 🤖 Enum automático (LinPEAS, LSE, linux-exploit-suggester)
-* 🔴 SUID / SGID
-* 🟠 SUDO mal configurado
-* 🟡 Cron Jobs
-* 🟢 Capabilities (cap_setuid)
-* 🟣 Archivos escribibles
-* 🟣 PATH Hijacking
-* 🔴 Kernel Exploits (DirtyPipe, PwnKit, DirtyCow...)
-* 🔵 Caza de credenciales
-* 🟠 LD_PRELOAD / LD_LIBRARY
-* 🐚 Reverse Shells (Bash, Python, nc, Perl, PHP)
-* ◉ Checklist de metodología interactiva
+**Attack categories covered:**
+SUID/SGID · Sudo misconfig · Cron injection · Linux Capabilities · Writable files · PATH hijacking · Kernel CVEs (DirtyPipe, PwnKit, DirtyCow...) · Credential hunting · LD_PRELOAD · Enum automation (LinPEAS, LSE)
 
 ---
 
-# 🎨 Características
+## Live Demo
 
-* UI cyberpunk responsive
-* Optimizado para móvil
-* Búsqueda interactiva por vector
-* Filtros por categoría (SUID, SUDO, CRON, CAPS, KERNEL...)
-* Checklist con barra de progreso
-* Copia instantánea de comandos
-* 100% offline
-* Single HTML file
+👉 [narufortix.github.io/CheatSheet/linux-privesc-cheatsheet](https://narufortix.github.io/CheatSheet/linux-privesc-cheatsheet/)
 
 ---
 
-# 📸 Preview
+## Usage
+
+Download `index.html` and open it in any browser. That's it.
+
+- No server needed
+- No internet required after download
+- Works on mobile and desktop
+
+---
+
+## Preview
 
 ![preview](preview.png)
 
 ---
 
-# ⚠️ Disclaimer
+## Disclaimer
 
-Solo para uso educativo, CTFs y auditorías de seguridad autorizadas.
+For educational purposes, CTFs and authorized security testing only.
 
 ---
 
-# 📜 Licencia
+## License
 
-MIT License
+MIT
