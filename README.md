@@ -13,6 +13,9 @@ Interactive pentesting reference with commands, tools and techniques in a single
 ### Linux PrivEsc Cheatsheet
 Interactive Linux privilege escalation reference — SUID/SGID, sudo, cron, capabilities, kernel exploits and reverse shells in a single HTML file.
 
+### Pivoting Cheatsheet
+Interactive pivoting reference — Chisel, SSH tunneling, Ligolo-NG, Socat, Proxychains and Metasploit routing in a single HTML file.
+
 ## Features
 
 - Interactive HTML format

