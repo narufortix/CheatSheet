@@ -31,7 +31,7 @@ Referencia interactiva de Git y GitHub para el flujo de trabajo diario. Un únic
 
 ## Uso
 
-Descarga `index.html` y ábrelo en cualquier navegador.
+Descarga `index.html` y ábrelo en cualquier navegador — o añádelo a tu vault de [Crypta](https://narufortix.github.io/crypta-releases) para tenerlo integrado en tu biblioteca de estudio.
 
 - No necesita servidor
 - No necesita internet tras descargarlo

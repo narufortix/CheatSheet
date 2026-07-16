@@ -33,7 +33,7 @@ Organizado por las herramientas que realmente usas a mitad de auditoría:
 
 ## Uso
 
-Descarga `index.html` y ábrelo en cualquier navegador.
+Descarga `index.html` y ábrelo en cualquier navegador — o añádelo a tu vault de [Crypta](https://narufortix.github.io/crypta-releases) para tenerlo integrado en tu biblioteca de estudio.
 
 - No necesita servidor
 - No necesita internet tras descargarlo

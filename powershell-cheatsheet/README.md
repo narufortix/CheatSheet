@@ -51,7 +51,7 @@ Interactive PowerShell cheatsheet designed for:
 
 ## 📦 Usage
 
-Download `sysadmin-powershell.html` and open it in any browser.
+Download `sysadmin-powershell.html` and open it in any browser — or drop it into your [Crypta](https://narufortix.github.io/crypta-releases) vault to keep it alongside your study library.
 
 No installation required.
 

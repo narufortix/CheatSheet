@@ -30,7 +30,7 @@ SUID/SGID · Sudo misconfig · Cron injection · Linux Capabilities · Writable 
 
 ## Usage
 
-Download `index.html` and open it in any browser. That's it.
+Download `index.html` and open it in any browser — or drop it into your [Crypta](https://narufortix.github.io/crypta-releases) vault to keep it alongside your study library.
 
 - No server needed
 - No internet required after download
