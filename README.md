@@ -16,6 +16,9 @@ Interactive Linux privilege escalation reference — SUID/SGID, sudo, cron, capa
 ### Pivoting Cheatsheet
 Interactive pivoting reference — Chisel, SSH tunneling, Ligolo-NG, Socat, Proxychains and Metasploit routing in a single HTML file.
 
+### Git & GitHub Cheatsheet
+Interactive Git and GitHub reference — staging, branches, merge, conflicts, remote, undo, pull requests and Markdown in a single HTML file.
+
 ## Features
 
 - Interactive HTML format

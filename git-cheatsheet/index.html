@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git &amp; GitHub · Cheatsheet</title>
+
+<!-- Open Graph / Telegram / LinkedIn / WhatsApp preview -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Git &amp; GitHub · Cheatsheet">
+<meta property="og:description" content="Referencia interactiva de Git y GitHub — staging, ramas, merge, conflictos, remoto, deshacer, pull requests y Markdown en un único HTML.">
+<meta property="og:image" content="https://narufortix.github.io/CheatSheet/git-cheatsheet/preview.png">
+<meta property="og:url" content="https://narufortix.github.io/CheatSheet/git-cheatsheet/">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Git &amp; GitHub · Cheatsheet">
+<meta name="twitter:description" content="Referencia interactiva de Git y GitHub — staging, ramas, merge, conflictos, remoto, deshacer, pull requests y Markdown en un único HTML.">
+<meta name="twitter:image" content="https://narufortix.github.io/CheatSheet/git-cheatsheet/preview.png">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg0:#070b09;--bg1:#0c110e;--bg2:#101712;--bg3:#161f19;--bg4:#1c2921;
+  --acc:#00d982;--acc2:#3dffa8;--acc-g:rgba(0,255,136,.14);--acc-gb:rgba(0,255,136,.06);
+  --ok:#16a34a;--ok-bg:rgba(22,163,74,.10);
+  --warn:#d97706;--warn-bg:rgba(217,119,6,.10);
+  --crit:#dc2626;--crit-bg:rgba(220,38,38,.10);
+  --info:#0891b2;--info-bg:rgba(8,145,178,.10);
+  --txt0:#dcf5ea;--txt1:#7ba895;--txt2:#436858;
+  --brd:#132a1e;--brd2:#1c3a29;
+  --mono:"JetBrains Mono",monospace;--sans:"Inter",sans-serif;
+  --sidebar:236px;
+}
+html,body{min-height:100%;background:var(--bg0);color:var(--txt0);font-family:var(--sans);font-size:15px;line-height:1.6;overflow-x:hidden}
+#grain{position:fixed;inset:0;z-index:999;pointer-events:none;opacity:.032;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat:repeat;background-size:128px}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:repeating-linear-gradient(0deg,transparent,transparent 39px,var(--brd) 40px),
+  repeating-linear-gradient(90deg,transparent,transparent 39px,var(--brd) 40px);opacity:.022}
+.layout{display:flex;min-height:100vh;position:relative;z-index:1}
+.sidebar{width:var(--sidebar);flex-shrink:0;background:rgba(7,11,9,.97);border-right:1px solid var(--brd);position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;z-index:100;overflow:hidden}
+.sb-brand{padding:20px 16px 16px;border-bottom:1px solid var(--brd);flex-shrink:0}
+.sb-logo{font-size:13px;font-weight:800;color:var(--txt0)}
+.sb-logo .a{color:var(--acc2)}
+.sb-sub{font-size:9px;font-family:var(--mono);color:var(--txt2);margin-top:2px;letter-spacing:.06em;text-transform:uppercase}
+.sb-nav{flex:1;overflow-y:auto;padding:0 8px 8px}
+.sb-btn{width:100%;display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid transparent;background:none;cursor:pointer;border-radius:8px;color:var(--txt1);font-family:var(--sans);font-size:12px;font-weight:500;transition:all .15s;text-align:left;margin-bottom:2px}
+.sb-btn:hover{background:var(--bg3);color:var(--txt0)}
+.sb-btn.active{background:var(--acc-g);color:var(--acc2);border-color:rgba(0,255,136,.3)}
+.sb-ico{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:var(--bg3);border:1px solid var(--brd)}
+.sb-badge{font-size:9px;font-family:var(--mono);background:var(--bg4);padding:2px 6px;border-radius:4px;color:var(--txt2);margin-left:auto}
+.sb-footer{padding:12px 14px;border-top:1px solid var(--brd);flex-shrink:0}
+.sb-prog-lbl{display:flex;justify-content:space-between;margin-bottom:5px}
+.sb-prog-lbl span,.sb-prog-lbl strong{font-size:10px;font-family:var(--mono);color:var(--txt2)}
+.sb-prog-lbl strong{color:var(--acc2)}
+.sb-track{height:4px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.sb-fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:2px;transition:width .4s;width:0%}
+.sb-ver{font-size:9px;font-family:var(--mono);color:var(--txt2);margin-top:6px}
+.main{margin-left:var(--sidebar);flex:1;min-width:0;min-height:100vh;display:flex;flex-direction:column}
+.hero{position:relative;height:250px;overflow:hidden;flex-shrink:0}
+.hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;animation:slowZoom 14s ease-out forwards}
+.hero-ov{position:absolute;inset:0;background:linear-gradient(105deg,rgba(7,11,9,.95) 28%,rgba(0,255,136,.10) 100%)}
+.hero-content{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:28px 32px}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(0,255,136,.18);border:1px solid rgba(0,255,136,.4);border-radius:20px;padding:3px 12px;font-size:10px;font-weight:600;color:var(--acc2);letter-spacing:.08em;text-transform:uppercase;font-family:var(--mono);margin-bottom:10px;width:fit-content}
+.hero-dot{width:6px;height:6px;border-radius:50%;background:var(--acc2);animation:blink 2s infinite;display:inline-block}
+.hero-h1{font-size:30px;font-weight:800;line-height:1.1;letter-spacing:-.02em;margin-bottom:8px}
+.hero-h1 .a{color:var(--acc2)}.hero-h1 .b{color:var(--txt0)}
+.hero-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.mpill{background:rgba(7,11,9,.7);border:1px solid var(--brd2);border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--mono);color:var(--txt1)}
+.mpill.a{border-color:rgba(0,255,136,.4);color:var(--acc2);background:var(--acc-gb)}
+.mpill.g{border-color:rgba(22,163,74,.4);color:#4ade80;background:rgba(22,163,74,.06)}
+.panels{flex:1;min-width:0;max-width:100%;padding:0 32px 60px}
+.panel{display:none;animation:fadeUp .25s ease;padding-top:4px}
+.panel.active{display:block}
+.st{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-family:var(--mono);padding:20px 0 10px;display:flex;align-items:center;gap:10px}
+.st::after{content:"";flex:1;height:1px}
+.st.am{color:var(--acc2)}.st.am::after{background:linear-gradient(90deg,rgba(0,255,136,.4),transparent)}
+.st.ok{color:#4ade80}.st.ok::after{background:linear-gradient(90deg,rgba(34,197,94,.4),transparent)}
+.st.rd{color:#f87171}.st.rd::after{background:linear-gradient(90deg,rgba(248,113,113,.4),transparent)}
+.st.cy{color:#67e8f9}.st.cy::after{background:linear-gradient(90deg,rgba(103,232,249,.4),transparent)}
+.st.pu{color:#a78bfa}.st.pu::after{background:linear-gradient(90deg,rgba(167,139,250,.4),transparent)}
+.card{background:var(--bg2);border:1px solid var(--brd);border-radius:10px;margin-bottom:10px;overflow:visible;transition:border-color .2s,box-shadow .2s}
+.card:hover{border-color:rgba(0,255,136,.3);box-shadow:0 0 18px rgba(0,255,136,.06)}
+.ah{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;cursor:pointer;user-select:none;gap:10px}
+.ah-l{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+.aico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;background:var(--acc-gb);border:1px solid rgba(0,255,136,.2)}
+.aico.g{background:rgba(22,163,74,.08);border-color:rgba(22,163,74,.2)}
+.aico.r{background:rgba(220,38,38,.08);border-color:rgba(220,38,38,.2)}
+.aico.c{background:rgba(8,145,178,.08);border-color:rgba(8,145,178,.2)}
+.aico.p{background:rgba(167,139,250,.08);border-color:rgba(167,139,250,.2)}
+.atit{font-size:13px;font-weight:600;color:var(--txt0)}
+.asub{font-size:10px;color:var(--txt2);font-family:var(--mono);margin-top:1px}
+.aarr{font-size:10px;color:var(--txt2);flex-shrink:0;transition:transform .25s}
+.ah.open .aarr{transform:rotate(180deg)}
+.ab{display:none;padding:0 16px 16px;border-top:1px solid var(--brd)}
+.ab.open{display:block}
+.cmd{background:var(--bg0);border:1px solid var(--brd2);border-radius:8px;margin:8px 0;overflow:hidden;max-width:100%}
+.cb{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;background:var(--bg3);border-bottom:1px solid var(--brd)}
+.cl{font-size:9px;font-family:var(--mono);color:var(--txt2);text-transform:uppercase;letter-spacing:.07em}
+.cc{background:none;border:1px solid var(--brd2);border-radius:4px;padding:3px 10px;font-size:10px;font-family:var(--mono);color:var(--txt1);cursor:pointer;transition:all .15s}
+.cc:hover{background:var(--acc-g);border-color:var(--acc);color:var(--acc2)}
+.cc.ok{background:rgba(22,163,74,.15);border-color:var(--ok);color:var(--ok)}
+.cd{padding:12px 14px;font-family:var(--mono);font-size:12px;line-height:1.85;color:var(--txt0);overflow-x:auto;white-space:pre;display:block;max-width:100%;box-sizing:border-box}
+.cd .cm{color:var(--txt2)}.cd .kw{color:var(--acc2);font-weight:600}
+.cd .ok{color:#4ade80}.cd .rd{color:#f87171}
+.cd .va{color:#fb923c}.cd .st2{color:#86efac}
+.cd .nm{color:#67e8f9}.cd .pu{color:#a78bfa}
+.ibox{border-radius:8px;padding:12px 14px;margin:8px 0;font-size:12.5px;line-height:1.6;display:flex;gap:10px}
+.ibox.info{background:var(--info-bg);border:1px solid rgba(8,145,178,.25)}
+.ibox.ok{background:var(--ok-bg);border:1px solid rgba(22,163,74,.25)}
+.ibox.warn{background:var(--warn-bg);border:1px solid rgba(217,119,6,.25)}
+.ibox.crit{background:var(--crit-bg);border:1px solid rgba(220,38,38,.25)}
+.ibox.am{background:var(--acc-gb);border:1px solid rgba(0,255,136,.25)}
+.ibox-ico{font-size:15px;flex-shrink:0;margin-top:1px}
+.ibox-txt{color:var(--txt1)}
+.ibox-txt strong{color:var(--txt0)}
+.tbl-wrap{overflow-x:auto;margin:8px 0 12px}
+.tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:400px}
+.tbl th{background:var(--bg3);color:var(--txt2);font-weight:600;padding:8px 12px;text-align:left;border-bottom:2px solid var(--brd2);font-size:10px;text-transform:uppercase;letter-spacing:.06em;font-family:var(--mono)}
+.tbl td{padding:8px 12px;border-bottom:1px solid var(--brd);color:var(--txt1);vertical-align:top;font-size:12px}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:rgba(255,255,255,.02)}
+.tbl code{font-family:var(--mono);font-size:11px;color:var(--acc2);background:var(--acc-gb);padding:1px 5px;border-radius:3px}
+.chi{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--bg2);border:1px solid var(--brd);border-radius:8px;cursor:pointer;transition:all .2s;margin-bottom:6px}
+.chi:hover{border-color:var(--brd2)}
+.chi.done{background:rgba(0,255,136,.05);border-color:rgba(0,255,136,.2)}
+.chb{width:16px;height:16px;border-radius:4px;border:2px solid var(--brd2);flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .2s}
+.chi.done .chb{background:var(--acc);border-color:var(--acc);color:#000}
+.chi span{font-size:12.5px;color:var(--txt1);line-height:1.45}
+.chi.done span{color:var(--txt2);text-decoration:line-through}
+.chcat{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--acc2);background:var(--acc-gb);border:1px solid rgba(0,255,136,.2);padding:1px 6px;border-radius:3px;margin-right:6px;text-transform:uppercase;font-family:var(--mono)}
+.chk-g{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.ch-progress{background:var(--bg2);border:1px solid var(--brd);border-radius:10px;padding:16px 18px;margin-bottom:16px}
+.ch-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.ch-lbl{font-size:13px;font-weight:700;color:var(--txt0)}
+.ch-sub{font-size:11px;color:var(--txt2);font-family:var(--mono)}
+.ch-track{height:8px;background:var(--bg4);border-radius:4px;overflow:hidden}
+.ch-fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:4px;transition:width .4s;width:0%}
+.ch-done{background:var(--ok-bg);border:1px solid rgba(22,163,74,.3);border-radius:8px;padding:12px 16px;font-size:13px;color:#4ade80;text-align:center;display:none;margin-top:12px}
+.bnav{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(7,11,9,.97);border-top:1px solid var(--brd);z-index:200;padding:0 4px 6px}
+.bnav-in{display:flex;overflow-x:auto;gap:2px;padding-top:4px;scrollbar-width:none}
+.bnav-in::-webkit-scrollbar{display:none}
+.bb{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 8px;border-radius:8px;cursor:pointer;border:none;background:transparent;color:var(--txt2);font-size:9px;font-family:var(--mono);min-width:48px;transition:all .15s}
+.bb.active{color:var(--acc2);background:var(--acc-g)}
+.bi{font-size:15px}.bl{font-size:9px}
+@keyframes slowZoom{from{transform:scale(1)}to{transform:scale(1.06)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+@media(max-width:900px){
+  .sidebar{display:none}.main{margin-left:0}.bnav{display:block}
+  .panels{padding:0 16px 80px}
+  .chk-g{grid-template-columns:1fr}
+  .hero{height:200px}.hero-h1{font-size:22px}
+}
+</style></head><body>
+<div id="grain"></div>
+<div class="layout">
+
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo"><span class="a">Git</span> &amp; GitHub</div>
+    <div class="sb-sub">Referencia &middot; comandos y flujo</div>
+  </div>
+  <nav class="sb-nav">
+    <button class="sb-btn active" onclick="sw('fund',this)"><div class="sb-ico">&#9881;&#65039;</div><span>Fundamentos</span></button>
+    <button class="sb-btn" onclick="sw('stage',this)"><div class="sb-ico">&#128230;</div><span>Stage &amp; Commit</span></button>
+    <button class="sb-btn" onclick="sw('ramas',this)"><div class="sb-ico">&#127807;</div><span>Ramas</span></button>
+    <button class="sb-btn" onclick="sw('conflictos',this)"><div class="sb-ico">&#9889;</div><span>Conflictos</span></button>
+    <button class="sb-btn" onclick="sw('remoto',this)"><div class="sb-ico">&#127760;</div><span>Remoto &amp; GitHub</span></button>
+    <button class="sb-btn" onclick="sw('deshacer',this)"><div class="sb-ico">&#8617;&#65039;</div><span>Deshacer</span></button>
+    <button class="sb-btn" onclick="sw('inspeccionar',this)"><div class="sb-ico">&#128269;</div><span>Inspeccionar</span></button>
+    <button class="sb-btn" onclick="sw('markdown',this)"><div class="sb-ico">&#9998;&#65039;</div><span>Markdown</span></button>
+    <button class="sb-btn" onclick="sw('pr',this)"><div class="sb-ico">&#128257;</div><span>Pull Request</span></button>
+    <button class="sb-btn" onclick="sw('check',this)"><div class="sb-ico">&#9989;</div><span>Checklist</span><span class="sb-badge" id="sb-badge">0/30</span></button>
+  </nav>
+  <div class="sb-footer">
+    <div class="sb-prog-lbl"><span>Progreso</span><strong id="sb-pct">0%</strong></div>
+    <div class="sb-track"><div class="sb-fill" id="sb-fill"></div></div>
+    <div class="sb-ver">Git &middot; GitHub &middot; SSH &middot; PR</div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="hero">
+    <img class="hero-img" src="https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=1200&q=80" alt="Git">
+    <div class="hero-ov"></div>
+    <div class="hero-content">
+      <div class="hero-badge"><span class="hero-dot"></span>Referencia</div>
+      <div class="hero-h1"><span class="a">Git</span> <span class="b">&amp; GitHub</span></div>
+      <div class="hero-meta">
+        <span class="mpill a">&#9881;&#65039; Staging &amp; Commits</span>
+        <span class="mpill a">&#127807; Ramas &amp; Merge</span>
+        <span class="mpill g">&#127760; Remoto &amp; SSH</span>
+        <span class="mpill g">&#128257; Pull Requests</span>
+      </div>
+    </div>
+  </div>
+  <div class="panels">
+
+    <!-- ============ FUNDAMENTOS ============ -->
+    <div id="p-fund" class="panel active">
+      <div class="st am">&#9881;&#65039; Fundamentos y configuracion</div>
+      <p style="font-size:13px;color:var(--txt1);line-height:1.7;margin-bottom:14px">Git es un sistema de control de versiones distribuido creado por Linus Torvalds. Antes de tocar un repositorio hay que identificarte: cada commit queda firmado con este nombre y email.</p>
+
+      <div class="card">
+        <div class="ah" onclick="togAcc(this)">
+          <div class="ah-l"><div class="aico">&#9881;&#65039;</div><div><div class="atit">Configuracion inicial</div><div class="asub">user.name, user.email, colores</div></div></div>
+          <span class="aarr">&#9660;</span>
+        </div>
+        <div class="ab">
+          <div class="ibox am"><span class="ibox-ico">&#9888;&#65039;</span><div class="ibox-txt"><strong>Ojo:</strong> el email debe coincidir con el de tu cuenta de GitHub, o tus commits no se te atribuiran visualmente en el perfil.</div></div>
+          <div class="cmd"><div class="cb"><span class="cl">Git &mdash; configuracion global</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+<div class="cd"><span class="cm"># Se aplica a todos los repositorios de este equipo</span>
+git config --global user.name <span class="st2">"Tu Nombre"</span>
+git config --global user.email <span class="st2">"tu@correo.com"</span>
+
+<span class="cm"># Colorea status, diff y log automaticamente</span>
+git config --global color.ui auto
+
+<span class="cm"># Ver toda la configuracion activa</span>
+git config --list</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ah" onclick="togAcc(this)">
+          <div class="ah-l"><div class="aico g">&#128193;</div><div><div class="atit">Crear e iniciar un repositorio</div><div class="asub">git init, la carpeta .git</div></div></div>
+          <span class="aarr">&#9660;</span>
+        </div>
+        <div class="ab">
+          <div class="cmd"><div class="cb"><span class="cl">Git &mdash; init</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+<div class="cd"><span class="cm"># Crear directorio de trabajo</span>
+mkdir mi-proyecto
+cd mi-proyecto
+
+<span class="cm"># Inicializar el repositorio</span>
+git init
+<span class="ok">Inicializado repositorio Git vacio en ...</span>
+
+<span class="cm"># Iniciar directamente con la rama llamada "main"</span>
+git init -b main
+
+<span class="cm"># Renombrar la rama actual (ej: de master a main)</span>
+git branch -M main</div></div>
+          <div class="ibox info"><span class="ibox-ico">&#128161;</span><div class="ibox-txt"><code>git init</code> crea una carpeta oculta <strong>.git</strong> con todo el historial y la configuracion del repositorio. Borrarla equivale a borrar el repositorio (los ficheros de trabajo sobreviven).</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ STAGE & COMMIT ============ -->
+    <div id="p-stage" class="panel">
+      <div class="st am">&#128230; Stage &amp; snapshot</div>
+      <p style="font-size:13px;color:var(--txt1);line-height:1.7;margin-bottom:14px">El ciclo diario de Git tiene tres zonas: <strong style="color:var(--txt0)">working directory</strong> (lo que editas) &rarr; <strong style="color:var(--txt0)">staging area</strong> (lo que preparas con <code>add</code>) &rarr; <strong style="color:var(--txt0)">historial</strong> (lo que confirmas con <code>commit</code>).</p>
+
+      <div class="card">
+        <div class="ah" onclick="togAcc(this)">
+          <div class="ah-l"><div class="aico">&#128203;</div><div><div class="atit">Ver el estado del repositorio</div><div class="asub">status, diff</div></div></div>
+          <span class="aarr">&#9660;</span>
+        </div>
+        <div class="ab">
+          <div class="cmd"><div class="cb"><span class="cl">Git &mdash; status y diff</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+<div class="cd"><span class="cm"># Que archivos estan modificados / en staging / sin seguimiento</span>
+git status
+
+<span class="cm"># Diferencias de lo modificado pero AUN NO en staging</span>
+git diff
+
+<span class="cm"># Diferencias de lo que ya esta en staging pero sin commit</span>
+git diff --staged
+
+<span class="cm"># Historial de commits de la rama activa</span>
+git log</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ah" onclick="togAcc(this)">
+          <div class="ah-l"><div class="aico g">&#9989;</div><div><div class="atit">Anadir y confirmar cambios</div><div class="asub">add, commit</div></div></div>
+          <span class="aarr">&#9660;</span>
+        </div>
+        <div class="ab">
+          <div class="cmd"><div class="cb"><span class="cl">Git &mdash; add + commit</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+<div class="cd"><span class="cm"># Preparar un archivo tal cual esta ahora mismo</span>
+git add ejemplo.txt
+
+<span class="cm"># Preparar TODOS los cambios del directorio actual</span>
+git add .
+
+<span class="cm"># Confirmar el contenido en staging como snapshot permanente</span>
+git commit -m <span class="st2">"He creado el fichero ejemplo.txt"</span>
+
+<span class="cm"># Atajo: add + commit en un paso (SOLO archivos YA rastreados)</span>
+git commit -am <span class="st2">"He modificado el fichero ejemplo.txt"</span></div></div>
+          <div class="ibox warn"><span class="ibox-ico">&#9888;&#65039;</span><div class="ibox-txt"><strong>Trampa comun:</strong> <code>commit -am</code> no funciona con archivos nuevos (sin rastrear). Para esos necesitas <code>git add</code> explicito al menos una vez.</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ah" onclick="togAcc(this)">
+          <div class="ah-l"><div class="aico c">&#9986;&#65039;</div><div><div class="atit">Renombrar y eliminar ficheros</div><div class="asub">mv, rm, tracking de rutas</div></div></div>
+          <span class="aarr">&#9660;</span>
+        </div>
+        <div class="ab">
+          <div class="cmd"><div class="cb"><span class="cl">Git &mdash; mv y rm</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+<div class="cd"><span class="cm"># Cambiar nombre y dejarlo preparado en staging</span>
+git mv ejemplo.txt ejemplo2.txt
+git commit -am <span class="st2">"He cambiado el nombre del fichero"</span>
+
+<span class="cm"># Eliminar del proyecto y preparar la eliminacion</span>
+git rm ejemplo2.txt
+git commit -am <span class="st2">"He borrado el fichero ejemplo2"</span>
+
+<span class="cm"># Ver el historial marcando archivos movidos/renombrados</span>
+git log --stat -M</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ RAMAS ============ -->
+    <div id="p-ramas" class="panel">
+      <div class="st am">&#127807; Ramas y fusion</div>
+      <p style="font-size:13px;color:var(--txt1);line-height:1.7;margin-bottom:14px">Una rama es una linea independiente de desarrollo con su propio historial de commits, sin afectar a la rama principal hasta que decides fusionar.</p>
+
+      <div class="card">
+        <div class="ah" onclick="togAcc(this)">
+          <div class="ah-l"><div class="aico">&#127807;</div><div><div class="atit">Crear y moverte entre ramas</div><div class="asub">branch, checkout</div></div></div>
+          <span class="aarr">&#9660;</span>
+        </div>
+        <div class="ab">
+          <div class="cmd"><div class="cb"><span class="cl">Git &mdash; branch y checkout</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+<div class="cd"><span class="cm"># Listar ramas locales (* marca la rama activa)</span>
+git branch
+<span class="ok">* main</span>
+
+<span class="cm"># Crear una rama nueva (NO te mueve a ella)</span>
+git branch nueva-funcionalidad
+
+<span class="cm"># Moverte a una rama existente</span>
+git checkout nueva-funcionalidad
+
+<span class="cm"># Truco: crear + moverte en un solo paso</span>
+git checkout -b nueva-funcionalidad
+
+<span class="cm"># Ver el ultimo commit de cada rama (para comprobar sincronizacion)</span>
+git branch -v</div></div>
+          <div class="ibox info"><span class="ibox-ico">&#128161;</span><div class="ibox-txt">GitHub llama <strong>main</strong> a la rama principal desde 2020. En repositorios antiguos puede llamarse <strong>master</strong> &mdash; ambas cumplen el mismo rol.</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ah" onclick="togAcc(this)">
+          <div class="ah-l"><div class="aico g">&#128260;</div><div><div class="atit">Fusionar (merge) una rama</div><div class="asub">merge, eliminar rama fusionada</div></div></div>
+          <span class="aarr">&#9660;</span>
+        </div>
+        <div class="ab">
+          <div class="cmd"><div class="cb"><span class="cl">Git &mdash; merge</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+<div class="cd"><span class="cm"># 1. Ponerte en la rama que va a RECIBIR los cambios</span>
+git checkout main
+
+<span class="cm"># 2. Fusionar la otra rama dentro de main</span>
+git merge nueva-funcionalidad
+
+<span class="cm"># 3. Ya fusionada, eliminar la rama local sobrante</span>
+git branch -d nueva-funcionalidad</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ah" onclick="togAcc(this)">
+          <div class="ah-l"><div class="aico p">&#9889;</div><div><div class="atit">Rebase</div><div class="asub">historial lineal, uso avanzado</div></div></div>
+          <span class="aarr">&#9660;</span>
+        </div>
+        <div class="ab">
+          <div class="cmd"><div class="cb"><span class="cl">Git &mdash; rebase</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+<div class="cd"><span class="cm"># Reaplica los commits de tu rama ENCIMA de [rama]</span>
+git rebase main</div></div>
+          <div class="ibox crit"><span class="ibox-ico">&#9940;</span><div class="ibox-txt"><strong>Regla de oro:</strong> nunca hagas rebase de una rama que otras personas ya tienen clonada o sobre la que estan trabajando. Reescribe el historial y les rompe el suyo.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ CONFLICTOS ============ -->
+    <div id="p-conflictos" class="panel">
+      <div class="st am">&#9889; Conflictos de fusion</div>
+      <p style="font-size:13px;color:var(--txt1);line-height:1.7;margin-bottom:14px">Aparecen cuando dos ramas modificaron <strong style="color:var(--txt0)">la misma parte</strong> de un archivo. Git no puede decidir por ti cual version es la correcta.</p>
+
+      <div class="card">
+        <div class="ah" onclick="togAcc(this)">
+          <div class="ah-l"><div class="aico r">&#9888;&#65039;</div><div><div class="atit">Leer y resolver un conflicto</div><div class="asub">marcas &lt;&lt;&lt;&lt;&lt;&lt;&lt; &#61; &#61; &#61; &gt;&gt;&gt;&gt;&gt;&gt;&gt;</div></div></div>
+          <span class="aarr">&#9660;</span>
+        </div>
+        <div class="ab">
+          <div class="cmd"><div class="cb"><span class="cl">Git &mdash; contenido con conflicto</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+<div class="cd">cat prueba.txt
+
+<span class="rd">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</span>
+Hola como estas
+<span class="cm">=======</span>
+hola que tal
+<span class="rd">&gt;&gt;&gt;&gt;&gt;&gt;&gt; nueva-rama</span></div></div>
+          <div class="ibox warn"><span class="ibox-ico">&#9888;&#65039;</span><div class="ibox-txt">Todo lo que hay entre <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</code> y <code>=======</code> es <strong>tu version actual</strong>. Lo que sigue hasta <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code> es <strong>la version entrante</strong>. Edita a mano, decide, borra las marcas y confirma.</div></div>
+          <div class="cmd"><div class="cb"><span class="cl">Git &mdash; cerrar el conflicto</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+<div class="cd"><span class="cm"># Tras editar el archivo y quitar las marcas</span>
+git add prueba.txt
+git commit -m <span class="st2">"Resuelto conflicto en prueba.txt"</span></div></div>
+        </div>
+      </div>
+
+      <div class="ibox ok"><span class="ibox-ico">&#9989;</span><div class="ibox-txt">Los conflictos por archivos <strong>anadidos o eliminados</strong> Git los resuelve solo. Los que duelen son los de <strong>lineas modificadas en ambas ramas</strong>.</div></div>
+    </div>
+
+    <!-- ============ REMOTO ============ -->
+    <div id="p-remoto" class="panel">
+      <div class="st am">&#127760; Remoto y GitHub</div>
+      <p style="font-size:13px;color:var(--txt1);line-height:1.7;margin-bottom:14px">GitHub guarda una copia de tu repositorio en un servidor remoto. Para no escribir contrasena en cada operacion se configura una clave SSH en tu perfil de GitHub (apartado <em>SSH keys</em>).</p>
+
+      <div class="card">
+        <div class="ah" onclick="togAcc(this)">
+          <div class="ah-l"><div class="aico">&#128273;</div><div><div class="atit">SSH vs HTTPS</div><div class="asub">que URL usar y cuando</div></div></div>
+          <span class="aarr">&#9660;</span>
+        </div>
+        <div class="ab">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <tr><th>URL</th><th>Cuando usarla</th></tr>
+              <tr><td><code>git@github.com:usuario/repo.git</code></td><td>Tus propios repositorios &mdash; permite push por SSH</td></tr>
+              <tr><td><code>https://github.com/usuario/repo.git</code></td><td>Repositorios ajenos que solo vas a clonar/leer</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ah" onclick="togAcc(this)">
+          <div class="ah-l"><div class="aico g">&#128193;</div><div><div class="atit">Clonar y enlazar un repositorio</div><div class="asub">clone, remote add, push -u</div></div></div>
+          <span class="aarr">&#9660;</span>
+        </div>
+        <div class="ab">
+          <div class="cmd"><div class="cb"><span class="cl">Git &mdash; clonar</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+<div class="cd"><span class="cm"># Descargar un repositorio completo con su historial</span>
+git clone git@github.com:usuario/repo.git</div></div>
+          <div class="cmd"><div class="cb"><span class="cl">Git &mdash; enlazar repositorio ya existente</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+<div class="cd"><span class="cm"># Crear repo vacio EN GITHUB (sin README) y luego:</span>
+git remote add origin git@github.com:usuario/repo.git
+
+<span class="cm"># Primer push: sube la rama y la enlaza (upstream)</span>
+git push -u origin main
+
+<span class="cm"># A partir de aqui, ya basta con:</span>
+git push</div></div>
+          <div class="ibox crit"><span class="ibox-ico">&#9940;</span><div class="ibox-txt"><strong>Error clasico:</strong> si al crear el repo en GitHub marcas "Initialize with README", el remoto tendra commits que tu local no tiene y el primer push fallara. Creálo <strong>sin README</strong> si vas a subir un repo local ya existente.</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ah" onclick="togAcc(this)">
+          <div class="ah-l"><div class="aico c">&#128257;</div><div><div class="atit">Sincronizar: push, pull, fetch</div><div class="asub">subir, bajar, y bajar sin fusionar</div></div></div>
+          <span class="aarr">&#9660;</span>
+        </div>
+        <div class="ab">
+          <div class="cmd"><div class="cb"><span class="cl">Git &mdash; sincronizacion</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+<div class="cd"><span class="cm"># Subir tus commits locales al remoto</span>
+git push
+
+<span class="cm"># Subir una rama nueva (las ramas NO se crean solas en GitHub)</span>
+git push origin nombre-rama
+
+<span class="cm"># Descargar y fusionar automaticamente (fetch + merge)</span>
+git pull
+
+<span class="cm"># Descargar SIN fusionar, para revisar antes de mezclar</span>
+git fetch origin
+
+<span class="cm"># Fusionar manualmente lo ya descargado</span>
+git merge origin/main</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ DESHACER ============ -->
+    <div id="p-deshacer" class="panel">
+      <div class="st am">&#8617;&#65039; Deshacer y viajar en el tiempo</div>
+      <p style="font-size:13px;color:var(--txt1);line-height:1.7;margin-bottom:14px">Ordenados de <strong style="color:var(--txt0)">menos</strong> a <strong style="color:var(--txt0)">mas</strong> destructivo. Lee la descripcion entera antes de ejecutar cualquiera con <code>--hard</code>.</p>
+
+      <div class="card">
+        <div class="ah" onclick="togAcc(this)">
+          <div class="ah-l"><div class="aico g">&#128190;</div><div><div class="atit">Guardar cambios sin confirmar (stash)</div><div class="asub">seguro &mdash; reversible</div></div></div>
+          <span class="aarr">&#9660;</span>
+        </div>
+        <div class="ab">
+          <div class="cmd"><div class="cb"><span class="cl">Git &mdash; stash</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+<div class="cd"><span class="cm"># Guardar temporalmente cambios sin confirmar</span>
+git stash
+
+<span class="cm"># Listar los stashes guardados (orden de pila)</span>
+git stash list
+
+<span class="cm"># Recuperar el ultimo y quitarlo de la pila</span>
+git stash pop
+
+<span class="cm"># Descartar el ultimo stash SIN aplicarlo</span>
+git stash drop</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ah" onclick="togAcc(this)">
+          <div class="ah-l"><div class="aico c">&#8617;&#65039;</div><div><div class="atit">Sacar del staging / volver a un commit</div><div class="asub">seguro &mdash; no pierde historial</div></div></div>
+          <span class="aarr">&#9660;</span>
+        </div>
+        <div class="ab">
+          <div class="cmd"><div class="cb"><span class="cl">Git &mdash; reset suave y checkout</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+<div class="cd"><span class="cm"># Sacar del staging pero CONSERVAR los cambios en disco</span>
+git reset ejemplo.txt
+
+<span class="cm"># Viajar a un commit anterior sin perder los posteriores</span>
+git checkout &lt;id-del-commit&gt;
+
+<span class="cm"># Volver a donde estabas antes de moverte</span>
+git switch -</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ah" onclick="togAcc(this)">
+          <div class="ah-l"><div class="aico r">&#9888;&#65039;</div><div><div class="atit">Reset --hard</div><div class="asub">destructivo &mdash; pierde cambios sin confirmar</div></div></div>
+          <span class="aarr">&#9660;</span>
+        </div>
+        <div class="ab">
+          <div class="ibox crit"><span class="ibox-ico">&#9940;</span><div class="ibox-txt"><strong>Irreversible en la practica:</strong> cualquier cambio sin confirmar en el momento de ejecutar esto se pierde. No hay "deshacer" facil.</div></div>
+          <div class="cmd"><div class="cb"><span class="cl">Git &mdash; reset --hard</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+<div class="cd"><span class="cm"># Reescribe staging y working directory al estado de [commit]</span>
+git reset --hard &lt;commit&gt;
+
+<span class="cm"># Elimina PERMANENTEMENTE los ultimos 3 commits de la rama actual</span>
+git reset --hard HEAD~3</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ INSPECCIONAR ============ -->
+    <div id="p-inspeccionar" class="panel">
+      <div class="st am">&#128269; Inspeccionar historial</div>
+
+      <div class="card">
+        <div class="ah" onclick="togAcc(this)">
+          <div class="ah-l"><div class="aico">&#128202;</div><div><div class="atit">Comparar ramas y commits</div><div class="asub">log, diff entre ramas, show</div></div></div>
+          <span class="aarr">&#9660;</span>
+        </div>
+        <div class="ab">
+          <div class="cmd"><div class="cb"><span class="cl">Git &mdash; comparaciones</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+<div class="cd"><span class="cm"># Commits que existen en branchA pero no en branchB</span>
+git log branchB..branchA
+
+<span class="cm"># Historial de un archivo, incluso a traves de renombres</span>
+git log --follow ejemplo.txt
+
+<span class="cm"># Diferencia de contenido entre dos ramas desde su origen comun</span>
+git diff branchB...branchA
+
+<span class="cm"># Ver un commit u objeto concreto en formato legible</span>
+git show &lt;SHA&gt;</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ah" onclick="togAcc(this)">
+          <div class="ah-l"><div class="aico p">&#128683;</div><div><div class="atit">Ignorar archivos</div><div class="asub">.gitignore, exclusion global</div></div></div>
+          <span class="aarr">&#9660;</span>
+        </div>
+        <div class="ab">
+          <div class="cmd"><div class="cb"><span class="cl">Git &mdash; core.excludesfile</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+<div class="cd"><span class="cm"># Patron de exclusion global para TODOS tus repositorios</span>
+git config --global core.excludesfile ~/.gitignore_global</div></div>
+          <div class="cmd"><div class="cb"><span class="cl">.gitignore &mdash; ejemplo de patrones</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+<div class="cd"><span class="cm"># Carpeta completa</span>
+logs/
+<span class="cm"># Extension de archivo (comodin)</span>
+*.notes
+<span class="cm"># Cualquier carpeta que empiece por "pattern"</span>
+pattern*/</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ MARKDOWN ============ -->
+    <div id="p-markdown" class="panel">
+      <div class="st am">&#9998;&#65039; Markdown</div>
+      <p style="font-size:13px;color:var(--txt1);line-height:1.7;margin-bottom:14px">Lenguaje de marcas ligero que se convierte a HTML automaticamente. GitHub renderiza cualquier <code>.md</code> &mdash; por eso todo repo suele llevar un <strong style="color:var(--txt0)">README.md</strong> describiendo el proyecto.</p>
+
+      <div class="card">
+        <div class="ah" onclick="togAcc(this)">
+          <div class="ah-l"><div class="aico">&#128221;</div><div><div class="atit">Sintaxis basica</div><div class="asub">titulos, enfasis, listas, enlaces</div></div></div>
+          <span class="aarr">&#9660;</span>
+        </div>
+        <div class="ab">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <tr><th>Elemento</th><th>Sintaxis</th></tr>
+              <tr><td>Titulo 1 / 2 / 3</td><td><code># Titulo</code> / <code>## Titulo</code> / <code>### Titulo</code></td></tr>
+              <tr><td>Negrita</td><td><code>**bold text**</code></td></tr>
+              <tr><td>Cursiva</td><td><code>*italicized text*</code></td></tr>
+              <tr><td>Cita</td><td><code>&gt; blockquote</code></td></tr>
+              <tr><td>Lista ordenada</td><td><code>1. item</code> / <code>2. item</code></td></tr>
+              <tr><td>Lista no ordenada</td><td><code>* item</code></td></tr>
+              <tr><td>Codigo inline</td><td><code>`code`</code></td></tr>
+              <tr><td>Enlace</td><td><code>[title](https://example.com)</code></td></tr>
+              <tr><td>Imagen</td><td><code>![alt text](image.jpg)</code></td></tr>
+            </table>
+          </div>
+          <div class="ibox info"><span class="ibox-ico">&#128161;</span><div class="ibox-txt">Si abres el repositorio directamente en GitHub, los archivos <code>.md</code> se muestran ya renderizados como HTML, no como texto plano.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ PULL REQUEST ============ -->
+    <div id="p-pr" class="panel">
+      <div class="st am">&#128257; Pull Request y colaboracion</div>
+      <p style="font-size:13px;color:var(--txt1);line-height:1.7;margin-bottom:14px">Un <strong style="color:var(--txt0)">Pull Request (PR)</strong> es una peticion formal al dueno de un repositorio para que incorpore los cambios que propones. Es la forma estandar de colaborar en proyectos que no son tuyos.</p>
+
+      <div class="card">
+        <div class="ah" onclick="togAcc(this)">
+          <div class="ah-l"><div class="aico">&#127942;</div><div><div class="atit">Flujo completo de un PR</div><div class="asub">fork, clonar, rama, push, revision</div></div></div>
+          <span class="aarr">&#9660;</span>
+        </div>
+        <div class="ab">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <tr><th>Paso</th><th>Accion</th></tr>
+              <tr><td>1</td><td>Fork del repositorio original desde GitHub (copia bajo tu cuenta)</td></tr>
+              <tr><td>2</td><td><code>git clone git@github.com:tu-usuario/repo.git</code></td></tr>
+              <tr><td>3</td><td><code>git checkout -b arregla-bug-x</code> &mdash; nunca trabajes en main directamente</td></tr>
+              <tr><td>4</td><td><code>git push origin arregla-bug-x</code> &mdash; sube la rama a TU fork</td></tr>
+              <tr><td>5</td><td>Abrir el Pull Request desde la interfaz de GitHub</td></tr>
+              <tr><td>6</td><td>El propietario revisa y puede pedir ajustes</td></tr>
+              <tr><td>7</td><td>Acepta (merge) o rechaza (se cierra sin fusionar)</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ah" onclick="togAcc(this)">
+          <div class="ah-l"><div class="aico g">&#128260;</div><div><div class="atit">Mantener tu fork actualizado</div><div class="asub">upstream, fetch, merge</div></div></div>
+          <span class="aarr">&#9660;</span>
+        </div>
+        <div class="ab">
+          <div class="cmd"><div class="cb"><span class="cl">Git &mdash; sincronizar fork con el original</span><button class="cc" onclick="cp(this)">&#8998; Copiar</button></div>
+<div class="cd"><span class="cm"># 1. Posicionarte en la rama principal de tu fork</span>
+git checkout main
+
+<span class="cm"># 2. Anadir el remoto original (una sola vez)</span>
+git remote add upstream git@github.com:autor-original/repo.git
+
+<span class="cm"># 3. Traer los cambios del original SIN fusionar aun</span>
+git fetch upstream
+
+<span class="cm"># 4. Fusionarlos en tu main local</span>
+git merge upstream/main</div></div>
+          <div class="ibox warn"><span class="ibox-ico">&#9888;&#65039;</span><div class="ibox-txt">Tu fork es una copia congelada en el tiempo. Si abres un PR desde un fork desactualizado es mucho mas probable que aparezcan conflictos que si lo sincronizas primero con <strong>upstream</strong>.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ CHECKLIST ============ -->
+    <div id="p-check" class="panel">
+      <div class="st am">&#9989; Checklist de dominio</div>
+
+      <div class="ch-progress">
+        <div class="ch-top">
+          <div class="ch-lbl">Progreso total</div>
+          <div class="ch-sub" id="ch-sub">0% completado</div>
+        </div>
+        <div class="ch-track"><div class="ch-fill" id="ch-fill"></div></div>
+        <div class="ch-done" id="ch-done">Dominas el flujo completo de Git y GitHub</div>
+      </div>
+
+      <div class="st am">Fundamentos y staging</div>
+      <div class="chk-g">
+        <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">SETUP</span>Configurar user.name y user.email</span></div>
+        <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">INIT</span>git init y estructura de .git</span></div>
+        <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">STAGE</span>Diferencia entre working dir, staging e historial</span></div>
+        <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">ADD</span>git add de archivos individuales y completos</span></div>
+        <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">COMMIT</span>git commit -m y git commit -am</span></div>
+        <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">STATUS</span>Leer git status y git diff sin miedo</span></div>
+      </div>
+
+      <div class="st am">Ramas y fusion</div>
+      <div class="chk-g">
+        <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">BRANCH</span>Crear, listar y cambiar de rama</span></div>
+        <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">MERGE</span>Fusionar una rama en main</span></div>
+        <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">DELETE</span>Eliminar ramas ya fusionadas</span></div>
+        <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">CONFLICT</span>Leer y resolver un conflicto de merge</span></div>
+        <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">REBASE</span>Entender cuando NO usar rebase</span></div>
+      </div>
+
+      <div class="st am">Remoto y GitHub</div>
+      <div class="chk-g">
+        <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">SSH</span>Configurar clave SSH en GitHub</span></div>
+        <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">CLONE</span>Clonar un repositorio existente</span></div>
+        <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">REMOTE</span>git remote add origin + push -u</span></div>
+        <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">SYNC</span>Diferencia entre push, pull y fetch</span></div>
+        <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">BRANCH</span>Subir una rama nueva al remoto</span></div>
+      </div>
+
+      <div class="st am">Deshacer e inspeccionar</div>
+      <div class="chk-g">
+        <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">STASH</span>Guardar y recuperar cambios temporales</span></div>
+        <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">RESET</span>Diferencia entre reset suave y --hard</span></div>
+        <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">CHECKOUT</span>Viajar a un commit anterior sin perder nada</span></div>
+        <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">LOG</span>Comparar ramas con log y diff</span></div>
+        <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">IGNORE</span>Escribir un .gitignore util</span></div>
+      </div>
+
+      <div class="st am">Markdown y Pull Requests</div>
+      <div class="chk-g">
+        <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">MD</span>Sintaxis basica de Markdown</span></div>
+        <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">README</span>Escribir un README.md decente</span></div>
+        <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">FORK</span>Hacer fork de un repositorio ajeno</span></div>
+        <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">PR</span>Abrir un Pull Request completo</span></div>
+        <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">UPSTREAM</span>Sincronizar tu fork con el repositorio original</span></div>
+        <div class="chi" onclick="ck(this)"><div class="chb"></div><span><span class="chcat">REVIEW</span>Entender que pasa si el PR se acepta o se rechaza</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="padding:20px 32px;border-top:1px solid var(--brd);display:flex;align-items:center;justify-content:center;margin-bottom:90px;position:relative;z-index:1">
+    <span style="font-family:var(--mono);font-size:10px;color:var(--txt2);letter-spacing:.06em">
+      Guia de referencia Git &amp; GitHub &middot; git commit -m "sigue estudiando"
+    </span>
+  </div>
+
+</div></div>
+
+<nav class="bnav">
+  <div class="bnav-in">
+    <button class="bb active" onclick="sw('fund',this)"><span class="bi">&#9881;&#65039;</span><span class="bl">Setup</span></button>
+    <button class="bb" onclick="sw('stage',this)"><span class="bi">&#128230;</span><span class="bl">Stage</span></button>
+    <button class="bb" onclick="sw('ramas',this)"><span class="bi">&#127807;</span><span class="bl">Ramas</span></button>
+    <button class="bb" onclick="sw('conflictos',this)"><span class="bi">&#9889;</span><span class="bl">Conflic</span></button>
+    <button class="bb" onclick="sw('remoto',this)"><span class="bi">&#127760;</span><span class="bl">Remoto</span></button>
+    <button class="bb" onclick="sw('deshacer',this)"><span class="bi">&#8617;&#65039;</span><span class="bl">Deshacer</span></button>
+    <button class="bb" onclick="sw('inspeccionar',this)"><span class="bi">&#128269;</span><span class="bl">Inspec</span></button>
+    <button class="bb" onclick="sw('markdown',this)"><span class="bi">&#9998;&#65039;</span><span class="bl">MD</span></button>
+    <button class="bb" onclick="sw('pr',this)"><span class="bi">&#128257;</span><span class="bl">PR</span></button>
+    <button class="bb" onclick="sw('check',this)"><span class="bi">&#9989;</span><span class="bl">Check</span></button>
+  </div>
+</nav>
+
+<script>
+function sw(id, btn) {
+  document.querySelectorAll(".panel").forEach(function(p){ p.classList.remove("active"); });
+  document.querySelectorAll(".sb-btn, .bb").forEach(function(b){ b.classList.remove("active"); });
+  var panel = document.getElementById("p-" + id);
+  if (panel) panel.classList.add("active");
+  document.querySelectorAll(".sb-btn, .bb").forEach(function(b) {
+    var oc = b.getAttribute("onclick") || "";
+    if (oc.indexOf("'" + id + "'") !== -1) b.classList.add("active");
+  });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+function togAcc(head) {
+  var card = head.closest(".card");
+  var body = head.nextElementSibling;
+  var isOpen = body.classList.contains("open");
+  card.querySelectorAll(".ab.open").forEach(function(b){ b.classList.remove("open"); });
+  card.querySelectorAll(".ah.open").forEach(function(h){ h.classList.remove("open"); });
+  if (!isOpen) { body.classList.add("open"); head.classList.add("open"); }
+}
+function cp(btn) {
+  var text = btn.closest(".cmd").querySelector(".cd").innerText;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(function() { flash(btn); });
+  } else {
+    var ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand("copy"); document.body.removeChild(ta); flash(btn);
+  }
+}
+function flash(btn) {
+  btn.textContent = "Copiado";
+  btn.classList.add("ok");
+  setTimeout(function(){ btn.textContent = "Copiar"; btn.classList.remove("ok"); }, 2000);
+}
+function ck(el) {
+  el.classList.toggle("done");
+  updChk();
+}
+function updChk() {
+  var all = document.querySelectorAll(".chi");
+  var done = document.querySelectorAll(".chi.done");
+  var total = all.length, n = done.length;
+  var pct = total > 0 ? Math.round((n / total) * 100) : 0;
+  document.getElementById("ch-fill").style.width = pct + "%";
+  document.getElementById("ch-sub").textContent = pct === 100 ? "Todo dominado" : pct + "% completado";
+  document.getElementById("sb-fill").style.width = pct + "%";
+  document.getElementById("sb-pct").textContent = pct + "%";
+  document.getElementById("sb-badge").textContent = n + "/" + total;
+  document.getElementById("ch-done").style.display = pct === 100 ? "block" : "none";
+}
+updChk();
+</script></body></html>
